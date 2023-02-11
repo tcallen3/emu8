@@ -98,6 +98,9 @@ void Memory8::CoreDump(const std::string& coreFile) const
 			coreFile);
 	}
 
+	// note that this will write out actual byte values rather than
+	// ASCII integers, but it will default to the native system
+	// endian-ness, and may require translation to Chip-8 format
 	std::copy(memory_.begin(), memory_.end(), 
 		std::ostream_iterator<Byte>(coreStream));
 

@@ -15,7 +15,10 @@ namespace bits8 {
  */
 constexpr Word fuseBytes(Byte msb, Byte lsb)
 {
+	Word high = msb;
+	Word low = lsb;
 
+	return (high << BITS_IN_BYTE) | low;
 }
 
 /*
@@ -25,7 +28,10 @@ constexpr Word fuseBytes(Byte msb, Byte lsb)
  */
 constexpr BytePair splitWord(Word word)
 {
+	Byte low = word | 0xFF;
+	Byte high = (word >> BITS_IN_BYTE) | 0xFF
 
+	return {low, high};
 }
 
 } /* bits8 */
