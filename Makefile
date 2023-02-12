@@ -31,7 +31,7 @@ OBJLIST := $(SRCLIST:$(SRCDIR)/%.cpp=$(BUILD)/%.o)
 
 DEPS := $(OBJLIST:%.o=%.d)
 
-.PHONY: clean
+.PHONY: clean check
 
 $(BIN)/$(PROG): $(OBJLIST) | $(BIN)
 	$(CXX) $(OBJLIST) -o $@ $(LDFLAGS)
@@ -44,6 +44,9 @@ $(BUILD):
 
 $(BIN):
 	mkdir -p $(BIN)
+
+check:
+	clang-tidy $(SRCDIR)/* -extra-arg=-std=c++17 -extra-arg-before=-xc++
 
 clean:
 	rm -r $(BUILD) $(BIN)
