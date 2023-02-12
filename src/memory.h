@@ -31,7 +31,7 @@ private:
   // the Chip-8 only has 4k total memory
   static constexpr std::size_t memSize_ = 0x1000;
 
-  static constexpr std::size_t memLow_ = 0x200;
+  const std::size_t memLow_;
   std::array<Byte, memSize_> memory_;
 };
 

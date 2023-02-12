@@ -15,7 +15,7 @@ static void ReportInvalidAccess(Word addr)
   throw std::runtime_error(errStream.str());
 }
 
-Memory8::Memory8(const std::size_t memBase) : memLow_(memBase) {
+Memory8::Memory8(const std::size_t memBase) : memLow_(memBase), memory_() {
   memory_.fill(0x0);
 }
 

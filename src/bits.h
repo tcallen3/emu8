@@ -9,6 +9,8 @@ using BytePair = std::pair<Byte, Byte>;
 
 namespace bits8 {
 
+constexpr Word LOW_BYTE_ON = 0xFF;
+
 /* 
  * combine 8-bit msb and 8-bit lsb into single 16-bit word 
  * as (msb,lsb)
@@ -28,8 +30,8 @@ constexpr Word fuseBytes(Byte msb, Byte lsb)
  */
 constexpr BytePair splitWord(Word word)
 {
-  Byte low = word | 0xFF;
-  Byte high = (word >> BITS_IN_BYTE) | 0xFF;
+  Byte low = static_cast<Byte>(word | LOW_BYTE_ON);
+  Byte high = static_cast<Byte>((word >> BITS_IN_BYTE) | LOW_BYTE_ON);
 
   return {low, high};
 }
