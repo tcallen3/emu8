@@ -35,11 +35,11 @@ static void ReportInvalidAccess(Address addr) {
   throw std::runtime_error(errStream.str());
 }
 
-Memory8::Memory8(std::size_t memBase) : memLow_(memBase), memory_() {
+Memory8::Memory8(const std::size_t memBase) : memLow_(memBase), memory_() {
   memory_.fill(0x0);
 }
 
-auto Memory8::FetchWord(Address addr) const -> Word {
+auto Memory8::FetchWord(const Address addr) const -> Word {
   if (addr < memLow_ || addr >= memSize_ - 1) {
     ReportInvalidAccess(addr);
   }
@@ -50,7 +50,7 @@ auto Memory8::FetchWord(Address addr) const -> Word {
   return bits8::fuseBytes(msb, lsb);
 }
 
-auto Memory8::FetchByte(Address addr) const -> Byte {
+auto Memory8::FetchByte(const Address addr) const -> Byte {
   if (addr < memLow_ || addr >= memSize_) {
     ReportInvalidAccess(addr);
   }
@@ -58,7 +58,7 @@ auto Memory8::FetchByte(Address addr) const -> Byte {
   return memory_.at(addr);
 }
 
-void Memory8::FetchSequence(Address addr, Word size,
+void Memory8::FetchSequence(const Address addr, const Word size,
                             std::vector<Byte> &buf) const {
   if (addr < memLow_) {
     ReportInvalidAccess(addr);
@@ -71,7 +71,7 @@ void Memory8::FetchSequence(Address addr, Word size,
             std::back_inserter(buf));
 }
 
-void Memory8::SetWord(Address addr, Word val) {
+void Memory8::SetWord(const Address addr, Word val) {
   if (addr < memLow_ || addr >= memSize_ - 1) {
     ReportInvalidAccess(addr);
   }
@@ -82,7 +82,7 @@ void Memory8::SetWord(Address addr, Word val) {
   memory_[addr + 1] = lsb;
 }
 
-void Memory8::SetByte(Address addr, Byte val) {
+void Memory8::SetByte(const Address addr, Byte val) {
   if (addr < memLow_ || addr >= memSize_) {
     ReportInvalidAccess(addr);
   }
@@ -90,7 +90,7 @@ void Memory8::SetByte(Address addr, Byte val) {
   memory_[addr] = val;
 }
 
-void Memory8::SetSequence(Address addr, Word size,
+void Memory8::SetSequence(const Address addr, const Word size,
                           const std::vector<Byte> &buf) {
   if (addr < memLow_) {
     ReportInvalidAccess(addr);

@@ -55,6 +55,6 @@ constexpr auto splitWord(Word word) -> BytePair {
   return {low, high};
 }
 
-} /* bits8 */
+} // namespace bits8
 
 #endif /* EMU8_BITS_H */
