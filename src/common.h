@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <cstdint>
 
+using Address = uint16_t;
 using Word = uint16_t;
 using Byte = uint8_t;
 

@@ -30,23 +30,24 @@
 
 class Memory8 {
 public:
-  Memory8(const std::size_t);
-  ~Memory8() {}
+  static constexpr std::size_t loadAddrDefault = 0x200;
+
+  explicit Memory8(std::size_t memBase);
 
   // all fetch methods are bounds-checked, throwing a runtime
   // exception if the starting (or ending) address is illegal
-  Word FetchWord(Word) const;
-  Byte FetchByte(Word) const;
-  void FetchSequence(Word, Word, std::vector<Byte> &) const;
+  [[nodiscard]] auto FetchWord(Address addr) const -> Word;
+  [[nodiscard]] auto FetchByte(Address addr) const -> Byte;
+  void FetchSequence(Address addr, Word size, std::vector<Byte> &buf) const;
 
   // all set methods are bounds-checked, throwing a runtime
   // exception if the starting (or ending) address is illegal
-  void SetWord(Word, Word);
-  void SetByte(Word, Byte);
-  void SetSequence(Word, Word, const std::vector<Byte> &);
+  void SetWord(Address addr, Word val);
+  void SetByte(Address addr, Byte val);
+  void SetSequence(Address addr, Word size, const std::vector<Byte> &buf);
 
   // dump full memory image to specified file for debugging
-  void CoreDump(const std::string &) const;
+  void CoreDump(const std::string &coreFile) const;
 
 private:
   // the Chip-8 only has 4k total memory

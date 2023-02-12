@@ -21,8 +21,8 @@
 
 #include "memory.h"
 
-int main() {
-  Memory8 mem(0x200);
+auto main() -> int {
+  Memory8 mem(Memory8::loadAddrDefault);
 
   return 0;
 }

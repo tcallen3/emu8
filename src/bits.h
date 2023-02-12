@@ -36,8 +36,7 @@ constexpr Word LOW_BYTE_ON = 0xFF;
  * combine 8-bit msb and 8-bit lsb into single 16-bit word 
  * as (msb,lsb)
  */
-constexpr Word fuseBytes(Byte msb, Byte lsb)
-{
+constexpr auto fuseBytes(Byte msb, Byte lsb) -> Word {
   Word high = msb;
   Word low = lsb;
 
@@ -49,8 +48,7 @@ constexpr Word fuseBytes(Byte msb, Byte lsb)
  * into its most-significant and least-significant bytes, returning
  * them as a pair in the order (msb, lsb)
  */
-constexpr BytePair splitWord(Word word)
-{
+constexpr auto splitWord(Word word) -> BytePair {
   Byte low = static_cast<Byte>(word | LOW_BYTE_ON);
   Byte high = static_cast<Byte>((word >> BITS_IN_BYTE) | LOW_BYTE_ON);
 

@@ -28,20 +28,18 @@
 #include "bits.h"
 #include "memory.h"
 
-static void ReportInvalidAccess(Word addr)
-{
+static void ReportInvalidAccess(Address addr) {
   std::stringstream errStream;
   errStream << "Invalid memory access: ";
   errStream << std::hex << addr;
   throw std::runtime_error(errStream.str());
 }
 
-Memory8::Memory8(const std::size_t memBase) : memLow_(memBase), memory_() {
+Memory8::Memory8(std::size_t memBase) : memLow_(memBase), memory_() {
   memory_.fill(0x0);
 }
 
-Word Memory8::FetchWord(Word addr) const
-{
+auto Memory8::FetchWord(Address addr) const -> Word {
   if (addr < memLow_ || addr >= memSize_ - 1) {
     ReportInvalidAccess(addr);
   }
@@ -52,8 +50,7 @@ Word Memory8::FetchWord(Word addr) const
   return bits8::fuseBytes(msb, lsb);
 }
 
-Byte Memory8::FetchByte(Word addr) const
-{
+auto Memory8::FetchByte(Address addr) const -> Byte {
   if (addr < memLow_ || addr >= memSize_) {
     ReportInvalidAccess(addr);
   }
@@ -61,7 +58,7 @@ Byte Memory8::FetchByte(Word addr) const
   return memory_.at(addr);
 }
 
-void Memory8::FetchSequence(Word addr, Word size,
+void Memory8::FetchSequence(Address addr, Word size,
                             std::vector<Byte> &buf) const {
   if (addr < memLow_) {
     ReportInvalidAccess(addr);
@@ -74,8 +71,7 @@ void Memory8::FetchSequence(Word addr, Word size,
             std::back_inserter(buf));
 }
 
-void Memory8::SetWord(Word addr, Word val)
-{
+void Memory8::SetWord(Address addr, Word val) {
   if (addr < memLow_ || addr >= memSize_ - 1) {
     ReportInvalidAccess(addr);
   }
@@ -86,8 +82,7 @@ void Memory8::SetWord(Word addr, Word val)
   memory_[addr + 1] = lsb;
 }
 
-void Memory8::SetByte(Word addr, Byte val)
-{
+void Memory8::SetByte(Address addr, Byte val) {
   if (addr < memLow_ || addr >= memSize_) {
     ReportInvalidAccess(addr);
   }
@@ -95,7 +90,8 @@ void Memory8::SetByte(Word addr, Byte val)
   memory_[addr] = val;
 }
 
-void Memory8::SetSequence(Word addr, Word size, const std::vector<Byte> &buf) {
+void Memory8::SetSequence(Address addr, Word size,
+                          const std::vector<Byte> &buf) {
   if (addr < memLow_) {
     ReportInvalidAccess(addr);
   } else if (addr + size > memSize_) {
