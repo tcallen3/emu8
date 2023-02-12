@@ -23,7 +23,7 @@ experience, rather than cycle-matching a fuzzily-defined virtual processor.
 
 Error conditions (such as invalid instructions or memory faults) trigger
 a core dump of the virtual machine memory, along with additional context
-written to stderr. Further debugging can be accomplished using `gdb(1)` to
+written to `stderr`. Further debugging can be accomplished using `gdb(1)` to
 examine program state during execution of a given ROM.
 
 # OPTIONS
@@ -37,7 +37,7 @@ corresponding to the convention for ETI 660 Chip-8 programs.
 For the emulator to work, `romfile` must be a binary file containing valid
 Chip-8 machine code. No header or other metadata is required, and the file
 will be loaded contiguously in Chip-8 virtual memory at the selected start
-location (0x200 by default, or 0x600 in ETI 660 compatibility mode).
+location (`0x200` by default, or `0x600` in ETI 660 compatibility mode).
 
 # NOTES
 
