@@ -26,8 +26,6 @@
 
 #include "common.h"
 
-using BytePair = std::pair<Byte, Byte>;
-
 namespace bits8 {
 
 constexpr Word LOW_BYTE_ON = 0xFF;
@@ -49,8 +47,8 @@ constexpr auto fuseBytes(Byte msb, Byte lsb) -> Word {
  * them as a pair in the order (msb, lsb)
  */
 constexpr auto splitWord(Word word) -> BytePair {
-  Byte low = static_cast<Byte>(word | LOW_BYTE_ON);
-  Byte high = static_cast<Byte>((word >> BITS_IN_BYTE) | LOW_BYTE_ON);
+  Byte low = static_cast<Byte>(word & LOW_BYTE_ON);
+  Byte high = static_cast<Byte>((word >> BITS_IN_BYTE) & LOW_BYTE_ON);
 
   return {low, high};
 }

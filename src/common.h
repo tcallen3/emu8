@@ -24,11 +24,23 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 
 using Address = uint16_t;
 using Word = uint16_t;
 using Byte = uint8_t;
 
+using BytePair = std::pair<Byte, Byte>;
+
 static constexpr std::size_t BITS_IN_BYTE = 8;
+
+static constexpr Address ADDRESS_MIN = std::numeric_limits<Address>::min();
+static constexpr Address ADDRESS_MAX = std::numeric_limits<Address>::max();
+
+static constexpr Word WORD_MIN = std::numeric_limits<Word>::min();
+static constexpr Word WORD_MAX = std::numeric_limits<Word>::max();
+
+static constexpr Byte BYTE_MIN = std::numeric_limits<Byte>::min();
+static constexpr Byte BYTE_MAX = std::numeric_limits<Byte>::max();
 
 #endif /* EMU8_COMMON_H */
