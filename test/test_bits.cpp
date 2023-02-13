@@ -19,15 +19,34 @@
  *
  */
 
+#include <cassert>
 #include <iostream>
+#include <random>
 
-#include "memory.h"
+#include "bits.h"
+#include "common.h"
 
 #include "test_bits.h"
 
-auto main() -> int {
-  inverse_fuse_split_test();
-  Memory8 mem{Memory8::loadAddrDefault};
-  std::cout << "Test passed\n";
-  return 0;
+static constexpr std::size_t RANDOM_TEST_COUNT = 1000;
+
+// FIXME: this doesn't work because of endianness...
+// We'll need to test fuse and split separately and dumbly
+void inverse_fuse_split_test() {
+  std::cout << "Testing inverse property of fuseBytes(splitWord())...";
+  std::random_device r;
+  std::default_random_engine eng(r());
+  std::uniform_int_distribution<Word> dist(WORD_MIN, WORD_MAX);
+
+  for (std::size_t i = 0; i < RANDOM_TEST_COUNT; i++) {
+    Word val = dist(eng);
+    auto bpair = bits8::splitWord(val);
+
+    Byte msb = bpair.first;
+    Byte lsb = bpair.second;
+
+    Word result = bits8::fuseBytes(msb, lsb);
+
+    assert(val == result);
+  }
 }
