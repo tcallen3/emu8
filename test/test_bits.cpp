@@ -46,3 +46,50 @@ void inverse_fuse_split_test() {
     assert(lsb == result.second);
   }
 }
+
+void fuse_low_byte_test() {
+  std::cout << "Testing match of low byte in fuseBytes()...";
+  std::random_device rdev;
+  std::default_random_engine eng(rdev());
+  std::uniform_int_distribution<Byte> dist(BYTE_MIN, BYTE_MAX);
+
+  constexpr Byte mask = 0xFF;
+  for (std::size_t i = 0; i < RANDOM_TEST_COUNT; i++) {
+    Byte msb = dist(eng);
+    Byte lsb = dist(eng);
+
+    auto fused = bits8::fuseBytes(msb, lsb);
+    assert(((fused & mask) ^ lsb) == 0);
+  }
+}
+
+void fuse_high_byte_test() {
+  std::cout << "Testing match of high byte in fuseBytes()...";
+  std::random_device rdev;
+  std::default_random_engine eng(rdev());
+  std::uniform_int_distribution<Byte> dist(BYTE_MIN, BYTE_MAX);
+
+  for (std::size_t i = 0; i < RANDOM_TEST_COUNT; i++) {
+    Byte msb = dist(eng);
+    Byte lsb = dist(eng);
+
+    auto fused = bits8::fuseBytes(msb, lsb);
+    assert(((fused >> CHAR_BIT) ^ msb) == 0);
+  }
+}
+
+void split_bytes_test() {
+  std::cout << "Testing match of both bytes in splitWord()...";
+  std::random_device rdev;
+  std::default_random_engine eng(rdev());
+  std::uniform_int_distribution<Word> dist(WORD_MIN, WORD_MAX);
+
+  constexpr Byte mask = 0xFF;
+  for (std::size_t i = 0; i < RANDOM_TEST_COUNT; i++) {
+    Word test = dist(eng);
+    auto [msb, lsb] = bits8::splitWord(test);
+
+    assert(((test & mask) ^ lsb) == 0);
+    assert(((test >> CHAR_BIT) ^ msb) == 0);
+  }
+}

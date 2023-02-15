@@ -27,6 +27,9 @@
 
 auto main() -> int {
   inverse_fuse_split_test();
+  fuse_low_byte_test();
+  fuse_high_byte_test();
+  split_bytes_test();
   Memory8 mem{Memory8::loadAddrDefault};
   std::cout << "Test passed\n";
   return 0;
