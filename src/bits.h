@@ -38,7 +38,7 @@ constexpr auto fuseBytes(Byte msb, Byte lsb) -> Word {
   Word high = msb;
   Word low = lsb;
 
-  return (high << BITS_IN_BYTE) | low;
+  return (high << CHAR_BIT) | low;
 }
 
 /*
@@ -48,9 +48,9 @@ constexpr auto fuseBytes(Byte msb, Byte lsb) -> Word {
  */
 constexpr auto splitWord(Word word) -> BytePair {
   Byte low = static_cast<Byte>(word & LOW_BYTE_ON);
-  Byte high = static_cast<Byte>((word >> BITS_IN_BYTE) & LOW_BYTE_ON);
+  Byte high = static_cast<Byte>((word >> CHAR_BIT) & LOW_BYTE_ON);
 
-  return {low, high};
+  return {high, low};
 }
 
 } // namespace bits8

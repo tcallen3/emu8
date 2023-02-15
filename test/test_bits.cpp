@@ -30,23 +30,19 @@
 
 static constexpr std::size_t RANDOM_TEST_COUNT = 1000;
 
-// FIXME: this doesn't work because of endianness...
-// We'll need to test fuse and split separately and dumbly
 void inverse_fuse_split_test() {
-  std::cout << "Testing inverse property of fuseBytes(splitWord())...";
+  std::cout << "Testing inverse property of splitWord(fuseBytes())...";
   std::random_device r;
   std::default_random_engine eng(r());
-  std::uniform_int_distribution<Word> dist(WORD_MIN, WORD_MAX);
+  std::uniform_int_distribution<Byte> dist(BYTE_MIN, BYTE_MAX);
 
   for (std::size_t i = 0; i < RANDOM_TEST_COUNT; i++) {
-    Word val = dist(eng);
-    auto bpair = bits8::splitWord(val);
+    Byte msb = dist(eng);
+    Byte lsb = dist(eng);
 
-    Byte msb = bpair.first;
-    Byte lsb = bpair.second;
+    auto result = bits8::splitWord(bits8::fuseBytes(msb, lsb));
 
-    Word result = bits8::fuseBytes(msb, lsb);
-
-    assert(val == result);
+    assert(msb == result.first);
+    assert(lsb == result.second);
   }
 }
