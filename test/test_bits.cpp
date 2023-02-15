@@ -32,8 +32,8 @@ static constexpr std::size_t RANDOM_TEST_COUNT = 1000;
 
 void inverse_fuse_split_test() {
   std::cout << "Testing inverse property of splitWord(fuseBytes())...";
-  std::random_device r;
-  std::default_random_engine eng(r());
+  std::random_device rdev;
+  std::default_random_engine eng(rdev());
   std::uniform_int_distribution<Byte> dist(BYTE_MIN, BYTE_MAX);
 
   for (std::size_t i = 0; i < RANDOM_TEST_COUNT; i++) {
