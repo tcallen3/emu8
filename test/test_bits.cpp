@@ -20,76 +20,70 @@
  */
 
 #include <cassert>
+#include <functional>
 #include <iostream>
-#include <random>
 
 #include "bits.h"
-#include "common.h"
 
 #include "test_bits.h"
 
-static constexpr std::size_t RANDOM_TEST_COUNT = 1000;
+TestBits::TestBits()
+    : eng(rdev()), byteDist(BYTE_MIN, BYTE_MAX), wordDist(WORD_MIN, WORD_MAX) {}
 
-void inverse_fuse_split_test() {
-  std::cout << "Testing inverse property of splitWord(fuseBytes())...";
-  std::random_device rdev;
-  std::default_random_engine eng(rdev());
-  std::uniform_int_distribution<Byte> dist(BYTE_MIN, BYTE_MAX);
+void TestBits::runTests() {
+  for (const auto &[desc, func] : functionMap_) {
+    std::cout << "Running " << desc << "...";
+    std::invoke(func, this);
+    std::cout << "PASSED\n";
+  }
+}
 
-  for (std::size_t i = 0; i < RANDOM_TEST_COUNT; i++) {
-    Byte msb = dist(eng);
-    Byte lsb = dist(eng);
+void TestBits::inverseFuseSplitTest() {
+
+  for (std::size_t i = 0; i < randomTestCount_; i++) {
+    Byte msb = byteDist(eng);
+    Byte lsb = byteDist(eng);
 
     auto result = bits8::splitWord(bits8::fuseBytes(msb, lsb));
 
-    assert(msb == result.first);
-    assert(lsb == result.second);
+    assert((msb == result.first) && "High-byte equality for split(fuse())");
+    assert((lsb == result.second) && "Low-byte equality for split(fuse())");
   }
 }
 
-void fuse_low_byte_test() {
-  std::cout << "Testing match of low byte in fuseBytes()...";
-  std::random_device rdev;
-  std::default_random_engine eng(rdev());
-  std::uniform_int_distribution<Byte> dist(BYTE_MIN, BYTE_MAX);
-
-  constexpr Byte mask = 0xFF;
-  for (std::size_t i = 0; i < RANDOM_TEST_COUNT; i++) {
-    Byte msb = dist(eng);
-    Byte lsb = dist(eng);
+void TestBits::fuseLowByteTest() {
+  const Byte mask = 0xFF;
+  for (std::size_t i = 0; i < randomTestCount_; i++) {
+    Byte msb = byteDist(eng);
+    Byte lsb = byteDist(eng);
 
     auto fused = bits8::fuseBytes(msb, lsb);
-    assert(((fused & mask) ^ lsb) == 0);
+
+    assert((((fused & mask) ^ lsb) == 0) &&
+           "Low-byte equality for fuseBytes()");
   }
 }
 
-void fuse_high_byte_test() {
-  std::cout << "Testing match of high byte in fuseBytes()...";
-  std::random_device rdev;
-  std::default_random_engine eng(rdev());
-  std::uniform_int_distribution<Byte> dist(BYTE_MIN, BYTE_MAX);
-
-  for (std::size_t i = 0; i < RANDOM_TEST_COUNT; i++) {
-    Byte msb = dist(eng);
-    Byte lsb = dist(eng);
+void TestBits::fuseHighByteTest() {
+  for (std::size_t i = 0; i < randomTestCount_; i++) {
+    Byte msb = byteDist(eng);
+    Byte lsb = byteDist(eng);
 
     auto fused = bits8::fuseBytes(msb, lsb);
-    assert(((fused >> CHAR_BIT) ^ msb) == 0);
+
+    assert((((fused >> CHAR_BIT) ^ msb) == 0) &&
+           "High-byte equality for fuseBytes()");
   }
 }
 
-void split_bytes_test() {
-  std::cout << "Testing match of both bytes in splitWord()...";
-  std::random_device rdev;
-  std::default_random_engine eng(rdev());
-  std::uniform_int_distribution<Word> dist(WORD_MIN, WORD_MAX);
-
-  constexpr Byte mask = 0xFF;
-  for (std::size_t i = 0; i < RANDOM_TEST_COUNT; i++) {
-    Word test = dist(eng);
+void TestBits::splitBytesTest() {
+  const Byte mask = 0xFF;
+  for (std::size_t i = 0; i < randomTestCount_; i++) {
+    Word test = wordDist(eng);
     auto [msb, lsb] = bits8::splitWord(test);
 
-    assert(((test & mask) ^ lsb) == 0);
-    assert(((test >> CHAR_BIT) ^ msb) == 0);
+    assert((((test & mask) ^ lsb) == 0) && "Low-byte equality for splitWord()");
+    assert((((test >> CHAR_BIT) ^ msb) == 0) &&
+           "High-byte equality for splitWord()");
   }
 }

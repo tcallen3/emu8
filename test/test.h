@@ -19,23 +19,23 @@
  *
  */
 
-#include <iostream>
+#ifndef EMU8_TEST_H
+#define EMU8_TEST_H
+
+#include <sstream>
+#include <string>
 #include <vector>
 
-#include "test.h"
-#include "test_bits.h"
+class Test {
+public:
+  Test() = default;
+  Test(const Test &other) = default;
+  Test(Test &&other) = default;
+  auto operator=(const Test &other) -> Test & = default;
+  auto operator=(Test &&other) -> Test & = default;
+  virtual ~Test() = default;
 
-auto main() -> int {
+  virtual void runTests() = 0;
+};
 
-  std::vector<Test *> testPtrs;
-  TestBits tbits;
-
-  testPtrs.push_back(&tbits);
-
-  for (const auto &ptr : testPtrs) {
-    ptr->runTests();
-  }
-
-  std::cout << "Finished testing\n";
-  return 0;
-}
+#endif /* EMU8_TEST_H */

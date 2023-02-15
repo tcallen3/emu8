@@ -22,9 +22,37 @@
 #ifndef TEST_BITS_H
 #define TEST_BITS_H
 
-void inverse_fuse_split_test();
-void fuse_low_byte_test();
-void fuse_high_byte_test();
-void split_bytes_test();
+#include <map>
+#include <random>
 
+#include "common.h"
+#include "test.h"
+
+class TestBits;
+using BitsMemFn = void (TestBits::*)();
+
+class TestBits : public Test {
+public:
+
+  TestBits();
+  void runTests() override;
+
+private:
+  void inverseFuseSplitTest();
+  void fuseLowByteTest();
+  void fuseHighByteTest();
+  void splitBytesTest();
+
+  std::random_device rdev = {};
+  std::default_random_engine eng;
+  std::uniform_int_distribution<Byte> byteDist;
+  std::uniform_int_distribution<Word> wordDist;
+
+  static constexpr std::size_t randomTestCount_ = 1000;
+  const std::map<std::string, BitsMemFn> functionMap_ = {
+      {"Inverse Fuse-Split", &TestBits::inverseFuseSplitTest},
+      {"Fuse Low Byte", &TestBits::fuseLowByteTest},
+      {"Fuse High Byte", &TestBits::fuseHighByteTest},
+      {"Split Bytes", &TestBits::splitBytesTest}};
+};
 #endif /* TEST_BITS_H */
