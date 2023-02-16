@@ -29,6 +29,7 @@
 #include <utility>
 
 using Address = uint16_t;
+using Instruction = uint16_t;
 using Word = uint16_t;
 using Byte = uint8_t;
 

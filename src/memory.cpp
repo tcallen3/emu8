@@ -20,6 +20,7 @@
  */
 
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <sstream>
@@ -27,6 +28,8 @@
 
 #include "bits.h"
 #include "memory.h"
+
+namespace fs = std::filesystem;
 
 static void ReportInvalidAccess(Address addr) {
   std::stringstream errStream;
@@ -39,7 +42,7 @@ Memory8::Memory8(const std::size_t memBase) : memLow_(memBase), memory_() {
   memory_.fill(0x0);
 }
 
-auto Memory8::FetchWord(const Address addr) const -> Word {
+auto Memory8::FetchInstruction(const Address addr) const -> Instruction {
   if (addr < memLow_ || addr >= memSize_ - 1) {
     ReportInvalidAccess(addr);
   }
@@ -71,17 +74,6 @@ void Memory8::FetchSequence(const Address addr, const Word size,
             std::back_inserter(buf));
 }
 
-void Memory8::SetWord(const Address addr, Word val) {
-  if (addr < memLow_ || addr >= memSize_ - 1) {
-    ReportInvalidAccess(addr);
-  }
-
-  auto [msb, lsb] = bits8::splitWord(val);
-
-  memory_[addr] = msb;
-  memory_[addr + 1] = lsb;
-}
-
 void Memory8::SetByte(const Address addr, Byte val) {
   if (addr < memLow_ || addr >= memSize_) {
     ReportInvalidAccess(addr);
@@ -101,8 +93,20 @@ void Memory8::SetSequence(const Address addr, const Word size,
   std::copy(buf.begin(), buf.end(), memory_.begin() + addr);
 }
 
-void Memory8::CoreDump(const std::string& coreFile) const
-{
+void Memory8::LoadProgram(const std::string &progFile) {
+  auto progSize = fs::file_size(progFile);
+
+  if (progSize > (memSize_ - memLow_)) {
+    throw std::runtime_error("Program file " + progFile +
+                             " too large to fit in memory");
+  }
+
+  std::ifstream progStream(progFile, std::ios::binary);
+  std::copy(std::istream_iterator<Byte>(progStream),
+            std::istream_iterator<Byte>(), memory_.begin() + memLow_);
+}
+
+void Memory8::DumpCore(const std::string &coreFile) const {
   std::fstream coreStream(coreFile, std::ios::binary | std::ios::out);
 
   if (!coreStream.good()) {

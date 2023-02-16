@@ -34,20 +34,31 @@ public:
 
   explicit Memory8(std::size_t memBase);
 
-  // all fetch methods are bounds-checked, throwing a runtime
+  // all set and fetch methods are bounds-checked, throwing a runtime
   // exception if the starting (or ending) address is illegal
-  [[nodiscard]] auto FetchWord(Address addr) const -> Word;
+
+  // retrieve a single byte from memory at address addr
   [[nodiscard]] auto FetchByte(Address addr) const -> Byte;
+
+  // retrieve two sequential bytes from memory, combining them into a big-endian
+  // word to be interpreted as a Chip-8 instruction
+  [[nodiscard]] auto FetchInstruction(Address addr) const -> Instruction;
+
+  // retrieve a sequence of bytes of length size from memory, starting at addr
   void FetchSequence(Address addr, Word size, std::vector<Byte> &buf) const;
 
-  // all set methods are bounds-checked, throwing a runtime
-  // exception if the starting (or ending) address is illegal
-  void SetWord(Address addr, Word val);
+  // set the value of the byte in memory at address addr to val
   void SetByte(Address addr, Byte val);
+
+  // set the value of a sequence of bytes in memory to the values specified in
+  // buf, starting at address addr and continuing for size bytes
   void SetSequence(Address addr, Word size, const std::vector<Byte> &buf);
 
+  // load a program image into memory from file on disk, starting at memLow_
+  void LoadProgram(const std::string &progFile);
+
   // dump full memory image to specified file for debugging
-  void CoreDump(const std::string &coreFile) const;
+  void DumpCore(const std::string &coreFile) const;
 
 private:
   // the Chip-8 only has 4k total memory
