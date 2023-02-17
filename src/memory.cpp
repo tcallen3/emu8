@@ -21,7 +21,6 @@
 
 #include <algorithm>
 #include <filesystem>
-#include <fstream>
 #include <iterator>
 #include <sstream>
 #include <stdexcept>
@@ -93,31 +92,21 @@ void Memory8::SetSequence(const Address addr, const Word size,
   std::copy(buf.begin(), buf.end(), memory_.begin() + addr);
 }
 
-void Memory8::LoadProgram(const std::string &progFile) {
-  auto progSize = fs::file_size(progFile);
+void Memory8::LoadProgram(std::istream &progStream) {
+  progStream.setf(std::noskipws);
 
-  if (progSize > (memSize_ - memLow_)) {
-    throw std::runtime_error("Program file " + progFile +
-                             " too large to fit in memory");
-  }
+  const std::size_t bufSize = memSize_ - memLow_;
+  std::copy_n(std::istream_iterator<Byte>(progStream), bufSize,
+              memory_.begin() + memLow_);
 
-  std::ifstream progStream(progFile, std::ios::binary);
-  std::copy(std::istream_iterator<Byte>(progStream),
-            std::istream_iterator<Byte>(), memory_.begin() + memLow_);
+  progStream.unsetf(std::noskipws);
 }
 
-void Memory8::DumpCore(const std::string &coreFile) const {
-  std::fstream coreStream(coreFile, std::ios::binary | std::ios::out);
+void Memory8::DumpCore(std::ostream &coreStream) const {
+  coreStream.setf(std::noskipws);
 
-  if (!coreStream.good()) {
-    throw std::runtime_error("Could not open corefile: " + coreFile);
-  }
-
-  // note that this will write out actual byte values rather than
-  // ASCII integers, but it will default to the native system
-  // endian-ness, and may require translation to Chip-8 format
-  std::copy(memory_.begin(), memory_.end(),
+  std::copy(memory_.begin() + memLow_, memory_.end(),
             std::ostream_iterator<Byte>(coreStream));
 
-  coreStream.close();
+  coreStream.unsetf(std::noskipws);
 }

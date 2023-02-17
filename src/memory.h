@@ -23,6 +23,8 @@
 #define EMU8_MEMORY_H
 
 #include <array>
+#include <istream>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -54,11 +56,11 @@ public:
   // buf, starting at address addr and continuing for size bytes
   void SetSequence(Address addr, Word size, const std::vector<Byte> &buf);
 
-  // load a program image into memory from file on disk, starting at memLow_
-  void LoadProgram(const std::string &progFile);
+  // load a program image into memory from input stream, starting at memLow_
+  void LoadProgram(std::istream &progStream);
 
-  // dump full memory image to specified file for debugging
-  void DumpCore(const std::string &coreFile) const;
+  // dump full memory image to specified output stream for debugging
+  void DumpCore(std::ostream &coreStream) const;
 
 private:
   // the Chip-8 only has 4k total memory
