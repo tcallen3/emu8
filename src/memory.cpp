@@ -28,7 +28,7 @@
 #include "bits.h"
 #include "memory.h"
 
-namespace fs = std::filesystem;
+// FIXME: change method names to lowercase initial letter
 
 static void ReportInvalidAccess(Address addr) {
   std::stringstream errStream;
@@ -42,7 +42,7 @@ Memory8::Memory8(const std::size_t memBase) : memLow_(memBase), memory_() {
 }
 
 auto Memory8::FetchInstruction(const Address addr) const -> Instruction {
-  if (addr < memLow_ || addr >= memSize_ - 1) {
+  if (addr < memLow_ || addr >= memSize - 1) {
     ReportInvalidAccess(addr);
   }
 
@@ -53,7 +53,7 @@ auto Memory8::FetchInstruction(const Address addr) const -> Instruction {
 }
 
 auto Memory8::FetchByte(const Address addr) const -> Byte {
-  if (addr < memLow_ || addr >= memSize_) {
+  if (addr < memLow_ || addr >= memSize) {
     ReportInvalidAccess(addr);
   }
 
@@ -64,7 +64,7 @@ void Memory8::FetchSequence(const Address addr, const Word size,
                             std::vector<Byte> &buf) const {
   if (addr < memLow_) {
     ReportInvalidAccess(addr);
-  } else if (addr + size > memSize_) {
+  } else if (addr + size > memSize) {
     ReportInvalidAccess(addr + size);
   }
 
@@ -74,7 +74,7 @@ void Memory8::FetchSequence(const Address addr, const Word size,
 }
 
 void Memory8::SetByte(const Address addr, Byte val) {
-  if (addr < memLow_ || addr >= memSize_) {
+  if (addr < memLow_ || addr >= memSize) {
     ReportInvalidAccess(addr);
   }
 
@@ -85,7 +85,7 @@ void Memory8::SetSequence(const Address addr, const Word size,
                           const std::vector<Byte> &buf) {
   if (addr < memLow_) {
     ReportInvalidAccess(addr);
-  } else if (addr + size > memSize_) {
+  } else if (addr + size > memSize) {
     ReportInvalidAccess(addr + size);
   }
 
@@ -93,20 +93,20 @@ void Memory8::SetSequence(const Address addr, const Word size,
 }
 
 void Memory8::LoadProgram(std::istream &progStream) {
-  progStream.setf(std::noskipws);
+  progStream.unsetf(std::ios::skipws);
 
-  const std::size_t bufSize = memSize_ - memLow_;
+  const std::size_t bufSize = memSize - memLow_;
   std::copy_n(std::istream_iterator<Byte>(progStream), bufSize,
               memory_.begin() + memLow_);
 
-  progStream.unsetf(std::noskipws);
+  progStream.setf(std::ios::skipws);
 }
 
 void Memory8::DumpCore(std::ostream &coreStream) const {
-  coreStream.setf(std::noskipws);
+  coreStream.unsetf(std::ios::skipws);
 
   std::copy(memory_.begin() + memLow_, memory_.end(),
             std::ostream_iterator<Byte>(coreStream));
 
-  coreStream.unsetf(std::noskipws);
+  coreStream.setf(std::ios::skipws);
 }

@@ -13,7 +13,7 @@ INCLUDE := -I$(SRCDIR) -I$(TESTDIR)
 CXXEXTRA := -g3 -fsanitize=address
 #CXXEXTRA := -O3 -flto
 
-CXXFLAGS := $(CXXEXTRA) $(INCLUDE) -Wall -Wextra -Werror -pedantic -Weffc++
+CXXFLAGS := $(CXXEXTRA) $(INCLUDE) -std=c++17 -Wall -Wextra -Werror -pedantic -Weffc++
 CXXFLAGS += -Wcast-align -Wcast-qual -Wconversion -Wdisabled-optimization
 CXXFLAGS += -Wfloat-equal -Wformat=2 -Wformat-nonliteral -pedantic-errors 
 CXXFLAGS += -Wformat-security -Wformat-y2k -Wimport -Winit-self

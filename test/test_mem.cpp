@@ -23,14 +23,12 @@
 #include <functional>
 #include <iostream>
 
-#include "memory.h"
-
-#include "test_memory.h"
+#include "test_mem.h"
 
 TestMemory::TestMemory()
     : eng(rdev()), byteDist(BYTE_MIN, BYTE_MAX), wordDist(WORD_MIN, WORD_MAX) {}
 
-void TestBits::runTests() {
+void TestMemory::runTests() {
   for (const auto &[desc, func] : functionMap_) {
     std::cout << "Running " << desc << "...";
     std::invoke(func, this);
@@ -40,6 +38,66 @@ void TestBits::runTests() {
 
 // access and single set functions: test < memlow, test @ memlow, test > 4k,
 // test memsize - 1, test valid interval
+void TestMemory::fetchByteBoundsTest() {
+  Memory8 mem{Memory8::loadAddrDefault};
+
+  // testing bad bounds (should throw)
+  for (const auto &addr : badAddrBounds) {
+    try {
+      std::ignore = mem.FetchByte(addr);
+      throw std::runtime_error("Invalid memory access permitted");
+    } catch (const std::runtime_error &err) {
+      std::ignore = err;
+      continue;
+    }
+  }
+
+  // testing good bounds (shouldn't throw)
+  for (const auto &addr : goodAddrBounds) {
+    std::ignore = mem.FetchByte(addr);
+  }
+}
+
+void TestMemory::setByteBoundsTest() {
+  Memory8 mem{Memory8::loadAddrDefault};
+  const Byte val = 0x1F;
+
+  // testing bad bounds (should throw)
+  for (const auto &addr : badAddrBounds) {
+    try {
+      mem.SetByte(addr, val);
+      throw std::runtime_error("Invalid memory assignment permitted");
+    } catch (const std::runtime_error &err) {
+      std::ignore = err;
+      continue;
+    }
+  }
+
+  // testing good bounds (shouldn't throw)
+  for (const auto &addr : goodAddrBounds) {
+    mem.SetByte(addr, val);
+  }
+}
+
+void TestMemory::fetchInstructionBoundsTest() {
+  Memory8 mem{Memory8::loadAddrDefault};
+
+  // testing bad bounds (should throw)
+  for (const auto &addr : badAddrBounds) {
+    try {
+      std::ignore = mem.FetchInstruction(addr);
+      throw std::runtime_error("Invalid memory access permitted");
+    } catch (const std::runtime_error &err) {
+      std::ignore = err;
+      continue;
+    }
+  }
+
+  // testing good bounds (shouldn't throw)
+  for (const auto &addr : goodInstructionBounds) {
+    std::ignore = mem.FetchInstruction(addr);
+  }
+}
 
 // same range tests for sequence access/set functions (accounting for sequence
 // length)
@@ -50,6 +108,6 @@ void TestBits::runTests() {
 
 // test program loading and dumping via string streams
 
-// test load/dump inverse property via string streams
-// NOTE: use std::generate_n from <algorithm> to fill the streams, will need
+// test load/dump inverse property via arrays/vectors
+// NOTE: use std::generate_n from <algorithm> to fill the arrays, will need
 // lambda to wrap rng call

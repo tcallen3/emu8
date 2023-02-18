@@ -24,8 +24,10 @@
 
 #include <map>
 #include <random>
+#include <string>
 
 #include "common.h"
+#include "memory.h"
 #include "test.h"
 
 class TestMemory;
@@ -37,13 +39,30 @@ public:
   void runTests() override;
 
 private:
+  void fetchByteBoundsTest();
+  void setByteBoundsTest();
+  void fetchInstructionBoundsTest();
+
   std::random_device rdev = {};
   std::default_random_engine eng;
   std::uniform_int_distribution<Byte> byteDist;
   std::uniform_int_distribution<Word> wordDist;
 
   static constexpr std::size_t randomTestCount_ = 1000;
-  const std::map<std::string, BitsMemFn> functionMap_;
+  std::vector<Address> badAddrBounds = {0x0, Memory8::loadAddrDefault,
+                                        Memory8::memSize, Memory8::memSize + 1};
+  std::vector<Address> goodAddrBounds = {
+      Memory8::loadAddrDefault, Memory8::loadAddrDefault + 1,
+      Memory8::memSize - 1, Memory8::memSize - 2,
+      (Memory8::loadAddrDefault + Memory8::memSize) / 2};
+  std::vector<Address> goodInstructionBounds = {
+      Memory8::loadAddrDefault, Memory8::loadAddrDefault + 1,
+      Memory8::memSize - 2, (Memory8::loadAddrDefault + Memory8::memSize) / 2};
+
+  const std::map<std::string, MemoryMemFn> functionMap_ = {
+      {"Byte fetch bounds", &TestMemory::fetchByteBoundsTest},
+      {"Byte set bounds", &TestMemory::setByteBoundsTest},
+      {"Instruction fetch bounds", &TestMemory::fetchInstructionBoundsTest}};
 };
 
 #endif /* TEST_MEM_H */

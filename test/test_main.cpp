@@ -24,13 +24,16 @@
 
 #include "test.h"
 #include "test_bits.h"
+#include "test_mem.h"
 
 auto main() -> int {
 
   std::vector<Test *> testPtrs;
   TestBits tbits;
+  TestMemory tmem;
 
   testPtrs.push_back(&tbits);
+  testPtrs.push_back(&tmem);
 
   for (const auto &ptr : testPtrs) {
     ptr->runTests();

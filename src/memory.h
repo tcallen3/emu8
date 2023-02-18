@@ -32,6 +32,8 @@
 
 class Memory8 {
 public:
+  // the Chip-8 only has 4k total memory
+  static constexpr std::size_t memSize = 0x1000;
   static constexpr std::size_t loadAddrDefault = 0x200;
 
   explicit Memory8(std::size_t memBase);
@@ -63,11 +65,8 @@ public:
   void DumpCore(std::ostream &coreStream) const;
 
 private:
-  // the Chip-8 only has 4k total memory
-  static constexpr std::size_t memSize_ = 0x1000;
-
   const std::size_t memLow_;
-  std::array<Byte, memSize_> memory_;
+  std::array<Byte, memSize> memory_;
 };
 
 #endif /* EMU8_MEMORY_H */
