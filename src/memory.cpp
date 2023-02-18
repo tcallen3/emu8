@@ -28,9 +28,7 @@
 #include "bits.h"
 #include "memory.h"
 
-// FIXME: change method names to lowercase initial letter
-
-static void ReportInvalidAccess(Address addr) {
+static void reportInvalidAccess(Address addr) {
   std::stringstream errStream;
   errStream << "Invalid memory access: ";
   errStream << std::hex << addr;
@@ -41,9 +39,9 @@ Memory8::Memory8(const std::size_t memBase) : memLow_(memBase), memory_() {
   memory_.fill(0x0);
 }
 
-auto Memory8::FetchInstruction(const Address addr) const -> Instruction {
+auto Memory8::fetchInstruction(const Address addr) const -> Instruction {
   if (addr < memLow_ || addr >= memSize - 1) {
-    ReportInvalidAccess(addr);
+    reportInvalidAccess(addr);
   }
 
   const auto msb = memory_.at(addr);
@@ -52,20 +50,20 @@ auto Memory8::FetchInstruction(const Address addr) const -> Instruction {
   return bits8::fuseBytes(msb, lsb);
 }
 
-auto Memory8::FetchByte(const Address addr) const -> Byte {
+auto Memory8::fetchByte(const Address addr) const -> Byte {
   if (addr < memLow_ || addr >= memSize) {
-    ReportInvalidAccess(addr);
+    reportInvalidAccess(addr);
   }
 
   return memory_.at(addr);
 }
 
-void Memory8::FetchSequence(const Address addr, const Word size,
+void Memory8::fetchSequence(const Address addr, const Word size,
                             std::vector<Byte> &buf) const {
   if (addr < memLow_) {
-    ReportInvalidAccess(addr);
+    reportInvalidAccess(addr);
   } else if (addr + size > memSize) {
-    ReportInvalidAccess(addr + size);
+    reportInvalidAccess(addr + size);
   }
 
   buf.reserve(size);
@@ -73,26 +71,26 @@ void Memory8::FetchSequence(const Address addr, const Word size,
             std::back_inserter(buf));
 }
 
-void Memory8::SetByte(const Address addr, Byte val) {
+void Memory8::setByte(const Address addr, Byte val) {
   if (addr < memLow_ || addr >= memSize) {
-    ReportInvalidAccess(addr);
+    reportInvalidAccess(addr);
   }
 
   memory_[addr] = val;
 }
 
-void Memory8::SetSequence(const Address addr, const Word size,
+void Memory8::setSequence(const Address addr, const Word size,
                           const std::vector<Byte> &buf) {
   if (addr < memLow_) {
-    ReportInvalidAccess(addr);
+    reportInvalidAccess(addr);
   } else if (addr + size > memSize) {
-    ReportInvalidAccess(addr + size);
+    reportInvalidAccess(addr + size);
   }
 
   std::copy(buf.begin(), buf.end(), memory_.begin() + addr);
 }
 
-void Memory8::LoadProgram(std::istream &progStream) {
+void Memory8::loadProgram(std::istream &progStream) {
   progStream.unsetf(std::ios::skipws);
 
   const std::size_t bufSize = memSize - memLow_;
@@ -102,7 +100,7 @@ void Memory8::LoadProgram(std::istream &progStream) {
   progStream.setf(std::ios::skipws);
 }
 
-void Memory8::DumpCore(std::ostream &coreStream) const {
+void Memory8::dumpCore(std::ostream &coreStream) const {
   coreStream.unsetf(std::ios::skipws);
 
   std::copy(memory_.begin() + memLow_, memory_.end(),

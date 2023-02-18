@@ -44,7 +44,7 @@ void TestMemory::fetchByteBoundsTest() {
   // testing bad bounds (should throw)
   for (const auto &addr : badAddrBounds) {
     try {
-      std::ignore = mem.FetchByte(addr);
+      std::ignore = mem.fetchByte(addr);
       throw std::runtime_error("Invalid memory access permitted");
     } catch (const std::runtime_error &err) {
       std::ignore = err;
@@ -54,7 +54,7 @@ void TestMemory::fetchByteBoundsTest() {
 
   // testing good bounds (shouldn't throw)
   for (const auto &addr : goodAddrBounds) {
-    std::ignore = mem.FetchByte(addr);
+    std::ignore = mem.fetchByte(addr);
   }
 }
 
@@ -65,7 +65,7 @@ void TestMemory::setByteBoundsTest() {
   // testing bad bounds (should throw)
   for (const auto &addr : badAddrBounds) {
     try {
-      mem.SetByte(addr, val);
+      mem.setByte(addr, val);
       throw std::runtime_error("Invalid memory assignment permitted");
     } catch (const std::runtime_error &err) {
       std::ignore = err;
@@ -75,7 +75,7 @@ void TestMemory::setByteBoundsTest() {
 
   // testing good bounds (shouldn't throw)
   for (const auto &addr : goodAddrBounds) {
-    mem.SetByte(addr, val);
+    mem.setByte(addr, val);
   }
 }
 
@@ -85,7 +85,7 @@ void TestMemory::fetchInstructionBoundsTest() {
   // testing bad bounds (should throw)
   for (const auto &addr : badAddrBounds) {
     try {
-      std::ignore = mem.FetchInstruction(addr);
+      std::ignore = mem.fetchInstruction(addr);
       throw std::runtime_error("Invalid memory access permitted");
     } catch (const std::runtime_error &err) {
       std::ignore = err;
@@ -95,7 +95,7 @@ void TestMemory::fetchInstructionBoundsTest() {
 
   // testing good bounds (shouldn't throw)
   for (const auto &addr : goodInstructionBounds) {
-    std::ignore = mem.FetchInstruction(addr);
+    std::ignore = mem.fetchInstruction(addr);
   }
 }
 

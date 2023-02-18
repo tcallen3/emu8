@@ -42,27 +42,27 @@ public:
   // exception if the starting (or ending) address is illegal
 
   // retrieve a single byte from memory at address addr
-  [[nodiscard]] auto FetchByte(Address addr) const -> Byte;
+  [[nodiscard]] auto fetchByte(Address addr) const -> Byte;
 
   // retrieve two sequential bytes from memory, combining them into a big-endian
   // word to be interpreted as a Chip-8 instruction
-  [[nodiscard]] auto FetchInstruction(Address addr) const -> Instruction;
+  [[nodiscard]] auto fetchInstruction(Address addr) const -> Instruction;
 
   // retrieve a sequence of bytes of length size from memory, starting at addr
-  void FetchSequence(Address addr, Word size, std::vector<Byte> &buf) const;
+  void fetchSequence(Address addr, Word size, std::vector<Byte> &buf) const;
 
   // set the value of the byte in memory at address addr to val
-  void SetByte(Address addr, Byte val);
+  void setByte(Address addr, Byte val);
 
   // set the value of a sequence of bytes in memory to the values specified in
   // buf, starting at address addr and continuing for size bytes
-  void SetSequence(Address addr, Word size, const std::vector<Byte> &buf);
+  void setSequence(Address addr, Word size, const std::vector<Byte> &buf);
 
   // load a program image into memory from input stream, starting at memLow_
-  void LoadProgram(std::istream &progStream);
+  void loadProgram(std::istream &progStream);
 
   // dump full memory image to specified output stream for debugging
-  void DumpCore(std::ostream &coreStream) const;
+  void dumpCore(std::ostream &coreStream) const;
 
 private:
   const std::size_t memLow_;
