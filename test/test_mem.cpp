@@ -155,10 +155,45 @@ void TestMemory::setSequenceBoundsTest() {
                   byteVec);
 }
 
-// test inverse property for get/set single functions
+void TestMemory::inverseGetSetSingleTest() {
+  Memory8 mem{Memory8::loadAddrDefault};
 
-// test inverse property for sequence get/set functions
+  for (std::size_t i = 0; i < randomTestCount_; i++) {
+    // make sure we can't go out of bounds by limiting address range
+    const Address addr =
+        static_cast<Address>(byteDist(eng)) + Memory8::loadAddrDefault;
+    Byte val = byteDist(eng);
+    mem.setByte(addr, val);
+    auto result = mem.fetchByte(addr);
 
+    assert(val == result && "retrieved byte == assigned byte");
+  }
+}
+
+void TestMemory::inverseGetSetSequenceTest() {
+  Memory8 mem{Memory8::loadAddrDefault};
+  auto callRand = [this]() { return byteDist(eng); };
+
+  for (std::size_t i = 0; i < randomTestCount_; i++) {
+    // make sure we can't go out of bounds by limiting address range
+    const Address addr =
+        static_cast<Address>(byteDist(eng)) + Memory8::loadAddrDefault;
+    Word vsize = static_cast<Word>(byteDist(eng));
+    std::vector<Byte> byteVec;
+    byteVec.reserve(vsize);
+    std::vector<Byte> resultVec;
+    resultVec.reserve(vsize);
+
+    std::generate_n(std::back_inserter(byteVec), vsize, callRand);
+
+    mem.setSequence(addr, vsize, byteVec);
+    mem.fetchSequence(addr, vsize, resultVec);
+
+    assert((byteVec.size() == resultVec.size()) && "equal sequence lengths");
+    assert(std::equal(byteVec.begin(), byteVec.end(), resultVec.begin()) &&
+           "equal sequence contents");
+  }
+}
 // test program loading and dumping via string streams
 
 // test load/dump inverse property via arrays/vectors

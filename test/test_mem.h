@@ -44,6 +44,8 @@ private:
   void fetchInstructionBoundsTest();
   void fetchSequenceBoundsTest();
   void setSequenceBoundsTest();
+  void inverseGetSetSingleTest();
+  void inverseGetSetSequenceTest();
 
   std::random_device rdev = {};
   std::default_random_engine eng;
@@ -66,7 +68,10 @@ private:
       {"Byte set bounds", &TestMemory::setByteBoundsTest},
       {"Instruction fetch bounds", &TestMemory::fetchInstructionBoundsTest},
       {"Sequence fetch bounds", &TestMemory::fetchSequenceBoundsTest},
-      {"Sequence set bounds", &TestMemory::setSequenceBoundsTest}};
+      {"Sequence set bounds", &TestMemory::setSequenceBoundsTest},
+      {"Inverse get-set single byte", &TestMemory::inverseGetSetSingleTest},
+      {"Inverse get-set byte sequence",
+       &TestMemory::inverseGetSetSequenceTest}};
 };
 
 #endif /* TEST_MEM_H */
