@@ -66,7 +66,6 @@ void Memory8::fetchSequence(const Address addr, const Word size,
     reportInvalidAccess(addr + size);
   }
 
-  buf.reserve(size);
   std::copy(memory_.begin() + addr, memory_.begin() + addr + size,
             std::back_inserter(buf));
 }
