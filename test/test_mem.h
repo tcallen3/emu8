@@ -42,6 +42,8 @@ private:
   void fetchByteBoundsTest();
   void setByteBoundsTest();
   void fetchInstructionBoundsTest();
+  void fetchSequenceBoundsTest();
+  void setSequenceBoundsTest();
 
   std::random_device rdev = {};
   std::default_random_engine eng;
@@ -62,7 +64,9 @@ private:
   const std::map<std::string, MemoryMemFn> functionMap_ = {
       {"Byte fetch bounds", &TestMemory::fetchByteBoundsTest},
       {"Byte set bounds", &TestMemory::setByteBoundsTest},
-      {"Instruction fetch bounds", &TestMemory::fetchInstructionBoundsTest}};
+      {"Instruction fetch bounds", &TestMemory::fetchInstructionBoundsTest},
+      {"Sequence fetch bounds", &TestMemory::fetchSequenceBoundsTest},
+      {"Sequence set bounds", &TestMemory::setSequenceBoundsTest}};
 };
 
 #endif /* TEST_MEM_H */
