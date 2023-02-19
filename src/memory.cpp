@@ -40,7 +40,7 @@ Memory8::Memory8(const std::size_t memBase) : memLow_(memBase), memory_() {
 }
 
 auto Memory8::fetchInstruction(const Address addr) const -> Instruction {
-  if (addr < memLow_ || addr >= memSize - 1) {
+  if (addr >= memSize - 1) {
     reportInvalidAccess(addr);
   }
 
@@ -51,7 +51,7 @@ auto Memory8::fetchInstruction(const Address addr) const -> Instruction {
 }
 
 auto Memory8::fetchByte(const Address addr) const -> Byte {
-  if (addr < memLow_ || addr >= memSize) {
+  if (addr >= memSize) {
     reportInvalidAccess(addr);
   }
 
@@ -60,10 +60,8 @@ auto Memory8::fetchByte(const Address addr) const -> Byte {
 
 void Memory8::fetchSequence(const Address addr, const Word size,
                             std::vector<Byte> &buf) const {
-  if (addr < memLow_) {
+  if (addr + size > memSize) {
     reportInvalidAccess(addr);
-  } else if (addr + size > memSize) {
-    reportInvalidAccess(addr + size);
   }
 
   std::copy(memory_.begin() + addr, memory_.begin() + addr + size,
@@ -71,7 +69,7 @@ void Memory8::fetchSequence(const Address addr, const Word size,
 }
 
 void Memory8::setByte(const Address addr, Byte val) {
-  if (addr < memLow_ || addr >= memSize) {
+  if (addr >= memSize) {
     reportInvalidAccess(addr);
   }
 
@@ -80,10 +78,8 @@ void Memory8::setByte(const Address addr, Byte val) {
 
 void Memory8::setSequence(const Address addr, const Word size,
                           const std::vector<Byte> &buf) {
-  if (addr < memLow_) {
+  if (addr + size > memSize) {
     reportInvalidAccess(addr);
-  } else if (addr + size > memSize) {
-    reportInvalidAccess(addr + size);
   }
 
   std::copy(buf.begin(), buf.end(), memory_.begin() + addr);
