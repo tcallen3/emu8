@@ -32,7 +32,7 @@ static void reportInvalidAccess(Address addr) {
   std::stringstream errStream;
   errStream << "Invalid memory access: ";
   errStream << std::hex << addr;
-  throw std::runtime_error(errStream.str());
+  throw std::out_of_range(errStream.str());
 }
 
 Memory8::Memory8(const std::size_t memBase) : memLow_(memBase), memory_() {

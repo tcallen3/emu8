@@ -46,7 +46,7 @@ void TestMemory::fetchByteBoundsTest() {
     try {
       std::ignore = mem.fetchByte(addr);
       throw std::runtime_error("Invalid memory access permitted");
-    } catch (const std::runtime_error &err) {
+    } catch (const std::out_of_range &err) {
       std::ignore = err;
       continue;
     }
@@ -67,7 +67,7 @@ void TestMemory::setByteBoundsTest() {
     try {
       mem.setByte(addr, val);
       throw std::runtime_error("Invalid memory assignment permitted");
-    } catch (const std::runtime_error &err) {
+    } catch (const std::out_of_range &err) {
       std::ignore = err;
       continue;
     }
@@ -87,7 +87,7 @@ void TestMemory::fetchInstructionBoundsTest() {
     try {
       std::ignore = mem.fetchInstruction(addr);
       throw std::runtime_error("Invalid memory access permitted");
-    } catch (const std::runtime_error &err) {
+    } catch (const std::out_of_range &err) {
       std::ignore = err;
       continue;
     }
@@ -110,7 +110,7 @@ void TestMemory::fetchSequenceBoundsTest() {
     try {
       mem.fetchSequence(addr, size, byteVec);
       throw std::runtime_error("Invalid memory access permitted");
-    } catch (const std::runtime_error &err) {
+    } catch (const std::out_of_range &err) {
       std::ignore = err;
       continue;
     }
@@ -142,7 +142,7 @@ void TestMemory::setSequenceBoundsTest() {
     try {
       mem.setSequence(addr, size, byteVec);
       throw std::runtime_error("Invalid memory access permitted");
-    } catch (const std::runtime_error &err) {
+    } catch (const std::out_of_range &err) {
       std::ignore = err;
       continue;
     }

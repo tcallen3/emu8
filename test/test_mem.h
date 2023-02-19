@@ -53,7 +53,7 @@ private:
   std::uniform_int_distribution<Word> wordDist;
 
   static constexpr std::size_t randomTestCount_ = 1000;
-  std::vector<Address> badAddrBounds = {0x0, Memory8::loadAddrDefault,
+  std::vector<Address> badAddrBounds = {0x0, Memory8::loadAddrDefault - 1,
                                         Memory8::memSize, Memory8::memSize + 1};
   std::vector<Address> goodAddrBounds = {
       Memory8::loadAddrDefault, Memory8::loadAddrDefault + 1,
