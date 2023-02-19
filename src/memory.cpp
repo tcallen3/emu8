@@ -37,6 +37,109 @@ static void reportInvalidAccess(Address addr) {
 
 Memory8::Memory8(const std::size_t memBase) : memLow_(memBase), memory_() {
   memory_.fill(0x0);
+  fillTextSprites();
+}
+
+void Memory8::fillTextSprites() {
+  const std::vector<Byte> sprites = {
+      0xF0, // 1111
+      0x90, // 1  1
+      0x90, // 1  1 -> "0"
+      0x90, // 1  1
+      0xF0, // 1111
+
+      0x20, //   1
+      0x60, //  11
+      0x20, //   1 -> "1"
+      0x20, //   1
+      0x70, //  111
+
+      0xF0, // 1111
+      0x10, //    1
+      0xF0, // 1111 -> "2"
+      0x80, // 1
+      0xF0, // 1111
+
+      0xF0, // 1111
+      0x10, //    1
+      0xF0, // 1111 -> "3"
+      0x10, //    1
+      0xF0, // 1111
+
+      0x90, // 1  1
+      0x90, // 1  1
+      0xF0, // 1111 -> "4"
+      0x10, //    1
+      0x10, //    1
+
+      0xF0, // 1111
+      0x80, // 1
+      0xF0, // 1111 -> "5"
+      0x10, //    1
+      0xF0, // 1111
+
+      0xF0, // 1111
+      0x80, // 1
+      0xF0, // 1111 -> "6"
+      0x90, // 1  1
+      0xF0, // 1111
+
+      0xF0, // 1111
+      0x10, //    1
+      0x20, //   1  -> "7"
+      0x40, //  1
+      0x40, //  1
+
+      0xF0, // 1111
+      0x90, // 1  1
+      0xF0, // 1111 -> "8"
+      0x90, // 1  1
+      0xF0, // 1111
+
+      0xF0, // 1111
+      0x90, // 1  1
+      0xF0, // 1111 -> "9"
+      0x10, //    1
+      0xF0, // 1111
+
+      0xF0, // 1111
+      0x90, // 1  1
+      0xF0, // 1111 -> "A"
+      0x90, // 1  1
+      0x90, // 1  1
+
+      0xE0, // 111
+      0x90, // 1  1
+      0xE0, // 111  -> "B"
+      0x90, // 1  1
+      0xE0, // 111
+
+      0xF0, // 1111
+      0x80, // 1
+      0x80, // 1    -> "C"
+      0x80, // 1
+      0xF0, // 1111
+
+      0xE0, // 111
+      0x90, // 1  1
+      0x90, // 1  1 -> "D"
+      0x90, // 1  1
+      0xE0, // 111
+
+      0xF0, // 1111
+      0x80, // 1
+      0xF0, // 1111 -> "E"
+      0x80, // 1
+      0xF0, // 1111
+
+      0xF0, // 1111
+      0x80, // 1
+      0xF0, // 1111 -> "F"
+      0x80, // 1
+      0x80  // 1
+  };
+
+  std::copy(sprites.begin(), sprites.end(), memory_.begin() + spriteBegin);
 }
 
 auto Memory8::fetchInstruction(const Address addr) const -> Instruction {
