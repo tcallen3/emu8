@@ -53,6 +53,31 @@ constexpr auto splitWord(Word word) -> BytePair {
   return {high, low};
 }
 
+/*
+ * given a two-byte instruction, mask out the lower 12 bits
+ * to get a valid Chip-8 memory address
+ */
+constexpr auto maskAddress(Instruction opcode) -> Address {
+  constexpr Address mask = 0x0FFF;
+  return opcode & mask;
+}
+
+/*
+ * mask out and return the lowest 4 bits from a given byte
+ */
+constexpr auto lowNibble(Byte val) -> Byte {
+  constexpr Byte mask = 0x0F;
+  return val & mask;
+}
+
+/*
+ * return the highest 4 bits of a given byte
+ */
+constexpr auto highNibble(Byte val) -> Byte {
+  constexpr Byte nibSize = 4;
+  return val >> nibSize;
+}
+
 } // namespace bits8
 
 #endif /* EMU8_BITS_H */
