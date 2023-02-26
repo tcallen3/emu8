@@ -78,8 +78,14 @@ constexpr auto highNibble(Byte val) -> Byte {
   return val >> nibSize;
 }
 
+/*
+ * return the least significant bit of a given byte
+ */
 auto inline getLsb(Byte val) -> Byte { return (val & 0x1); }
 
+/*
+ * return the most significant bit of a given byte
+ */
 auto inline getMsb(Byte val) -> Byte {
   const Byte mask = 0x80;
   return ((val & mask) != 0) ? 1 : 0;

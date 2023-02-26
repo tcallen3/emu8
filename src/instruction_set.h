@@ -22,22 +22,81 @@
 #ifndef EMU8_INSTRUCTION_SET
 #define EMU8_INSTRUCTION_SET
 
+#include <map>
 #include <random>
+#include <set>
 
 #include "memory.h"
 #include "register_set.h"
 
 class InstructionSet8;
 using InstructionFn = void (InstructionSet8::*)();
+using CodeMap = std::map<Word, InstructionFn>;
 
 class InstructionSet8 {
 public:
   InstructionSet8(RegisterSet8 &reg, Memory8 &mem);
+  void DecodeExecuteInstruction(Instruction opcode);
 
-  void SetOpcode(Instruction opcode) { opcode_ = opcode; } // needed??
-  // InstructionFn DecodeExecuteInstruction(Instruction opcode);
+private:
+  std::random_device rdev = {};
+  std::default_random_engine eng;
+  std::uniform_int_distribution<Byte> byteDist;
 
-  // NOTE: make these private?
+  Instruction opcode_ = {};
+  RegisterSet8 &regSet_;
+  Memory8 &memory_;
+
+  // most significant nibbles for opcodes completely determined by this value
+  const std::set<Byte> msnSet = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6,
+                                 0x7, 0x9, 0xA, 0xB, 0xC, 0xD};
+
+  // most significant nibbles for opcodes determined by this value and lowest
+  // byte (remaining opcodes are 0x8nnn and depend on only most and least
+  // significant nibble)
+  const std::set<Byte> lowByteSet = {0x0, 0xE, 0xF};
+
+  const CodeMap codeMapping = {
+      {0x1, &InstructionSet8::Execute1nnn},
+      {0x2, &InstructionSet8::Execute2nnn},
+      {0x3, &InstructionSet8::Execute3xkk},
+      {0x4, &InstructionSet8::Execute4xkk},
+      {0x5, &InstructionSet8::Execute5xy0},
+      {0x6, &InstructionSet8::Execute6xkk},
+      {0x7, &InstructionSet8::Execute7xkk},
+      {0x9, &InstructionSet8::Execute9xy0},
+      {0xA, &InstructionSet8::ExecuteAnnn},
+      {0xB, &InstructionSet8::ExecuteBnnn},
+      {0xC, &InstructionSet8::ExecuteCxkk},
+      {0xD, &InstructionSet8::ExecuteDxyn},
+
+      {0x00E0, &InstructionSet8::Execute00E0},
+      {0x00EE, &InstructionSet8::Execute00EE},
+
+      {0x8000, &InstructionSet8::Execute8xy0},
+      {0x8001, &InstructionSet8::Execute8xy1},
+      {0x8002, &InstructionSet8::Execute8xy2},
+      {0x8003, &InstructionSet8::Execute8xy3},
+      {0x8004, &InstructionSet8::Execute8xy4},
+      {0x8005, &InstructionSet8::Execute8xy5},
+      {0x8006, &InstructionSet8::Execute8xy6},
+      {0x8007, &InstructionSet8::Execute8xy7},
+      {0x800E, &InstructionSet8::Execute8xyE},
+
+      {0xE09E, &InstructionSet8::ExecuteEx9E},
+      {0xE0A1, &InstructionSet8::ExecuteExA1},
+
+      {0xF007, &InstructionSet8::ExecuteFx07},
+      {0xF00A, &InstructionSet8::ExecuteFx0A},
+      {0xF015, &InstructionSet8::ExecuteFx15},
+      {0xF018, &InstructionSet8::ExecuteFx18},
+      {0xF01E, &InstructionSet8::ExecuteFx1E},
+      {0xF029, &InstructionSet8::ExecuteFx29},
+      {0xF033, &InstructionSet8::ExecuteFx33},
+      {0xF055, &InstructionSet8::ExecuteFx55},
+      {0xF065, &InstructionSet8::ExecuteFx65},
+  };
+
   void Execute00E0();
   void Execute00EE();
 
@@ -77,15 +136,6 @@ public:
   void ExecuteFx33();
   void ExecuteFx55();
   void ExecuteFx65();
-
-private:
-  std::random_device rdev = {};
-  std::default_random_engine eng;
-  std::uniform_int_distribution<Byte> byteDist;
-
-  Instruction opcode_ = {};
-  RegisterSet8 &regSet_;
-  Memory8 &memory_;
 };
 
 #endif /* EMU8_INSTRUCTION_SET */

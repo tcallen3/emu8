@@ -20,6 +20,7 @@
  */
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <stdexcept>
 #include <string>
@@ -46,6 +47,47 @@ static auto GetSingleRegNibble(Instruction opcode) -> Byte {
 
 InstructionSet8::InstructionSet8(RegisterSet8 &reg, Memory8 &mem)
     : eng(rdev()), byteDist(BYTE_MIN, BYTE_MAX), regSet_{reg}, memory_{mem} {}
+
+void InstructionSet8::DecodeExecuteInstruction(Instruction opcode) {
+  opcode_ = opcode;
+
+  auto [high, low] = bits8::splitWord(opcode);
+  const auto highNib = bits8::highNibble(high);
+
+  // key depends on most significant nibble (msn), and optionally lower byte or
+  // nibble
+  Word codeKey = 0x0;
+  if (msnSet.count(highNib) != 0) {
+    // code uniquely determined by msn
+    codeKey = highNib;
+  } else {
+    const Byte keyHigh = highNib << (CHAR_BIT / 2);
+    if (lowByteSet.count(highNib) != 0) {
+      // code determined by msn and low byte
+      codeKey = bits8::fuseBytes(keyHigh, low);
+    } else {
+      // 0x8nnn opcodes
+      codeKey = bits8::fuseBytes(keyHigh, bits8::lowNibble(low));
+    }
+  }
+
+  // decode
+  InstructionFn currInstruction{nullptr};
+  try {
+    currInstruction = codeMapping.at(codeKey);
+  } catch (const std::out_of_range &err) {
+    throw std::invalid_argument("unrecognized opcode: " +
+                                std::to_string(opcode));
+  }
+
+  if (currInstruction == nullptr) {
+    throw std::invalid_argument("unrecognized opcode: " +
+                                std::to_string(opcode));
+  }
+
+  // execute
+  std::invoke(currInstruction, this);
+}
 
 void InstructionSet8::Execute00E0() {
   // CLS - clear the display
