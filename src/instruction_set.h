@@ -22,6 +22,8 @@
 #ifndef EMU8_INSTRUCTION_SET
 #define EMU8_INSTRUCTION_SET
 
+#include <random>
+
 #include "memory.h"
 #include "register_set.h"
 
@@ -77,6 +79,10 @@ public:
   void ExecuteFx65();
 
 private:
+  std::random_device rdev = {};
+  std::default_random_engine eng;
+  std::uniform_int_distribution<Byte> byteDist;
+
   Instruction opcode_ = {};
   RegisterSet8 &regSet_;
   Memory8 &memory_;

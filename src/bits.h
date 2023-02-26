@@ -78,6 +78,13 @@ constexpr auto highNibble(Byte val) -> Byte {
   return val >> nibSize;
 }
 
+auto inline getLsb(Byte val) -> Byte { return (val & 0x1); }
+
+auto inline getMsb(Byte val) -> Byte {
+  const Byte mask = 0x80;
+  return ((val & mask) != 0) ? 1 : 0;
+}
+
 } // namespace bits8
 
 #endif /* EMU8_BITS_H */

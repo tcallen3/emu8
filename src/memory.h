@@ -35,8 +35,8 @@ public:
   // the Chip-8 only has 4k total memory
   static constexpr std::size_t memSize = 0x1000;
   static constexpr std::size_t loadAddrDefault = 0x200;
-  static constexpr Byte spriteBegin = 0x50;
-  static constexpr Byte spriteLen = 5;
+  static constexpr Address spriteBegin = 0x50;
+  static constexpr Address spriteLen = 5;
 
   explicit Memory8(std::size_t memBase);
 
