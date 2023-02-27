@@ -19,29 +19,28 @@
  *
  */
 
-#include <iostream>
-#include <vector>
+#ifndef TEST_INSTRUCTION_H
+#define TEST_INSTRUCTION_H
 
-#include "test.h"
-#include "test_bits.h"
-#include "test_instruction.h"
-#include "test_mem.h"
+#include <map>
 
-auto main() -> int {
+#include "instruction_set.h"
+#include "memory.h"
+#include "register_set.h"
 
-  std::vector<Test *> testPtrs;
-  TestBits tbits;
-  TestMemory tmem;
-  TestInstruction tinstr;
+class TestInstruction;
+using InstructionMemFn = void (TestInstruction::*)();
 
-  testPtrs.push_back(&tbits);
-  testPtrs.push_back(&tmem);
-  testPtrs.push_back(&tinstr);
+class TestInstruction : public Test {
+public:
+  TestInstruction();
+  void runTests() override;
 
-  for (const auto &ptr : testPtrs) {
-    ptr->runTests();
-  }
+private:
+  Memory8 memory_;
+  RegisterSet8 regSet_;
 
-  std::cout << "Finished testing\n";
-  return 0;
-}
+  const std::map<std::string, InstructionMemFn> functionMap_ = {};
+};
+
+#endif /* TEST_INSTRUCTION_H */

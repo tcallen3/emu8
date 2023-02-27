@@ -19,29 +19,17 @@
  *
  */
 
-#include <iostream>
-#include <vector>
+#include <functional>
 
-#include "test.h"
-#include "test_bits.h"
 #include "test_instruction.h"
-#include "test_mem.h"
 
-auto main() -> int {
+TestInstruction::TestInstruction()
+    : memory_(Memory8::loadAddrDefault), regSet_() {}
 
-  std::vector<Test *> testPtrs;
-  TestBits tbits;
-  TestMemory tmem;
-  TestInstruction tinstr;
-
-  testPtrs.push_back(&tbits);
-  testPtrs.push_back(&tmem);
-  testPtrs.push_back(&tinstr);
-
-  for (const auto &ptr : testPtrs) {
-    ptr->runTests();
+void TestInstruction::runTests() {
+  for (const auto &[desc, func] : functionMap_) {
+    std::cout << "Running " << desc << "...";
+    std::invoke(func, this);
+    std::cout << "PASSED\n";
   }
-
-  std::cout << "Finished testing\n";
-  return 0;
 }
