@@ -27,6 +27,7 @@
 #include "instruction_set.h"
 #include "memory.h"
 #include "register_set.h"
+#include "test.h"
 
 class TestInstruction;
 using InstructionMemFn = void (TestInstruction::*)();
@@ -37,10 +38,40 @@ public:
   void runTests() override;
 
 private:
+  void Test00EE();
+  void Test1nnn();
+  void Test2nnn();
+  void Test3xkk();
+  void Test4xkk();
+  void Test5xy0();
+  void Test6xkk();
+  void Test7xkk();
+
+  // FIXME add tests for 0x8XXX
+
+  void Test9xy0();
+  void TestAnnn();
+  void TestBnnn();
+  void TestCxkk();
+
+  // FIXME add tests for 0xFXXX
+
   Memory8 memory_;
   RegisterSet8 regSet_;
 
-  const std::map<std::string, InstructionMemFn> functionMap_ = {};
+  const std::map<std::string, InstructionMemFn> functionMap_ = {
+      {"Instruction 00EE", &TestInstruction::Test00EE},
+      {"Instruction 1nnn", &TestInstruction::Test1nnn},
+      {"Instruction 2nnn", &TestInstruction::Test2nnn},
+      {"Instruction 3xkk", &TestInstruction::Test3xkk},
+      {"Instruction 4xkk", &TestInstruction::Test4xkk},
+      {"Instruction 5xy0", &TestInstruction::Test5xy0},
+      {"Instruction 6xkk", &TestInstruction::Test6xkk},
+      {"Instruction 7xkk", &TestInstruction::Test7xkk},
+      {"Instruction 9xy0", &TestInstruction::Test9xy0},
+      {"Instruction Annn", &TestInstruction::TestAnnn},
+      {"Instruction Bnnn", &TestInstruction::TestBnnn},
+      {"Instruction Cxkk", &TestInstruction::TestCxkk}};
 };
 
 #endif /* TEST_INSTRUCTION_H */

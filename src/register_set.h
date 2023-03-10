@@ -35,7 +35,7 @@ struct RegisterSet8 {
   Address regI = {0x0};
   Address pc = {0x0};
   std::array<Byte, regCount> registers = {};
-  std::stack<Address> callStack;
+  std::stack<Address> callStack = {};
 };
 
 #endif /* EMU8_REGISTER_SET_H */
