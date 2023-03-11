@@ -52,7 +52,6 @@ private:
   void Test9xy0();
   void TestAnnn();
   void TestBnnn();
-  void TestCxkk();
 
   // FIXME add tests for 0xFXXX
 
@@ -70,8 +69,7 @@ private:
       {"Instruction 7xkk", &TestInstruction::Test7xkk},
       {"Instruction 9xy0", &TestInstruction::Test9xy0},
       {"Instruction Annn", &TestInstruction::TestAnnn},
-      {"Instruction Bnnn", &TestInstruction::TestBnnn},
-      {"Instruction Cxkk", &TestInstruction::TestCxkk}};
+      {"Instruction Bnnn", &TestInstruction::TestBnnn}};
 };
 
 #endif /* TEST_INSTRUCTION_H */

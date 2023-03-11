@@ -23,6 +23,7 @@
 #include <functional>
 #include <iostream>
 
+#include "bits.h"
 #include "test_instruction.h"
 
 TestInstruction::TestInstruction()
@@ -36,7 +37,8 @@ void TestInstruction::runTests() {
   }
 }
 
-static Instruction BuildAddressInstruction(Byte instrNib, Address addr) {
+static auto BuildAddressInstruction(const Byte instrNib, Address addr)
+    -> Instruction {
   const Byte shift = 12;
 
   Instruction code = instrNib;
@@ -46,6 +48,7 @@ static Instruction BuildAddressInstruction(Byte instrNib, Address addr) {
   return code;
 }
 
+// RET
 void TestInstruction::Test00EE() {
   // load up stack pointer
   const std::size_t count = 16;
@@ -85,6 +88,7 @@ void TestInstruction::Test00EE() {
   }
 }
 
+// JP addr
 void TestInstruction::Test1nnn() {
   const Byte instrId = 0x1;
   const Address limit = 0x1000;
@@ -94,26 +98,98 @@ void TestInstruction::Test1nnn() {
   for (Address addr = 0; addr < limit; addr++) {
     Instruction opcode = BuildAddressInstruction(instrId, addr);
     iset.DecodeExecuteInstruction(opcode);
-    assert((regSet_.pc == addr) && "PC address equality 1nnn");
+    assert((regSet_.pc == addr) && "PC address equality 0x1nnn");
   }
 }
 
-void TestInstruction::Test2nnn() {}
+// CALL addr
+void TestInstruction::Test2nnn() {
+  const Byte instrId = 0x2;
+  const Address limit = 0x1000;
+  const Address incr = 0x111;
 
-void TestInstruction::Test3xkk() {}
+  InstructionSet8 iset(regSet_, memory_);
+  while (!regSet_.callStack.empty()) {
+    regSet_.callStack.pop();
+  }
 
-void TestInstruction::Test4xkk() {}
+  for (Address addr = 0; addr < limit; addr += incr) {
+    const auto prevSize = regSet_.callStack.size();
+    const auto prevPc = regSet_.pc;
+    Instruction opcode = BuildAddressInstruction(instrId, addr);
+    iset.DecodeExecuteInstruction(opcode);
+    assert((regSet_.pc == addr) && "PC set to address 0x2nnn");
+    assert((regSet_.callStack.top() == prevPc) &&
+           "Old PC saved to stack 0x2nnn");
+    assert((regSet_.callStack.size() > prevSize) && "Stack incremented 0x2nnn");
+  }
 
-void TestInstruction::Test5xy0() {}
+  // test stack overflow
+  try {
+    const Instruction opcode = 0x2123;
+    iset.DecodeExecuteInstruction(opcode);
+    assert(false && "Stack overflow 0x2nnn");
+  } catch (const std::overflow_error &err) {
+    std::ignore = err;
+  }
+}
 
-void TestInstruction::Test6xkk() {}
+// SE Vx, byte
+void TestInstruction::Test3xkk() {
+  // FIXME: implement
+}
 
-void TestInstruction::Test7xkk() {}
+// SNE Vx, byte
+void TestInstruction::Test4xkk() {
+  // FIXME: implement
+}
 
-void TestInstruction::Test9xy0() {}
+// SE Vx, Vy
+void TestInstruction::Test5xy0() {
+  // FIXME: implement
+}
 
-void TestInstruction::TestAnnn() {}
+// LD Vx, byte
+void TestInstruction::Test6xkk() {
+  const Byte hiByte = 0x60;
+  const Byte rcount = static_cast<Byte>(RegisterSet8::regCount);
 
-void TestInstruction::TestBnnn() {}
+  InstructionSet8 iset(regSet_, memory_);
 
-void TestInstruction::TestCxkk() {}
+  for (Byte reg = 0; reg < rcount; reg++) {
+    for (Byte val = BYTE_MIN; val < BYTE_MAX; val++) {
+      Instruction opcode = bits8::fuseBytes((hiByte | reg), val);
+      iset.DecodeExecuteInstruction(opcode);
+      assert((regSet_.registers[reg] == val) && "Register assignment 0x6xkk");
+    }
+  }
+}
+
+// ADD Vx, byte
+void TestInstruction::Test7xkk() {
+  // FIXME: implement
+}
+
+// SNE Vx, Vy
+void TestInstruction::Test9xy0() {
+  // FIXME: implement
+}
+
+// LD I, addr
+void TestInstruction::TestAnnn() {
+  const Byte instrId = 0xA;
+  const Address limit = 0x1000;
+
+  InstructionSet8 iset(regSet_, memory_);
+
+  for (Address addr = 0; addr < limit; addr++) {
+    Instruction opcode = BuildAddressInstruction(instrId, addr);
+    iset.DecodeExecuteInstruction(opcode);
+    assert((regSet_.regI == addr) && "Set register I 0xAnnn");
+  }
+}
+
+// JP V0, addr
+void TestInstruction::TestBnnn() {
+  // FIXME: implement
+}

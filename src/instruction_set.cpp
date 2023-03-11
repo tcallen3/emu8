@@ -116,8 +116,12 @@ void InstructionSet8::Execute2nnn() {
     throw std::overflow_error("stack overflow");
   }
 
+  // save old address
+  regSet_.callStack.push(regSet_.pc);
+
+  // assign new address
   const auto addr = bits8::maskAddress(opcode_);
-  regSet_.callStack.push(addr);
+  regSet_.pc = addr;
 }
 
 void InstructionSet8::Execute3xkk() {
