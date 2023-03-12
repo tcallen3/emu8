@@ -198,6 +198,7 @@ void Memory8::loadProgram(std::istream &progStream) {
   progStream.setf(std::ios::skipws);
 }
 
+// FIXME: use in error reporting, add testing flag!
 void Memory8::dumpCore(std::ostream &coreStream) const {
   coreStream.unsetf(std::ios::skipws);
 
