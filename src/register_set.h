@@ -28,8 +28,8 @@
 #include "common.h"
 
 struct RegisterSet8 {
-  static constexpr std::size_t regCount = 16;
   static constexpr std::size_t stackSize = 16;
+  static constexpr Byte regCount = 16;
   Byte regST = {0x0};
   Byte regDT = {0x0};
   Address regI = {0x0};
