@@ -28,7 +28,8 @@
 
 TestInstruction::TestInstruction()
     : eng(rdev()), byteDist(BYTE_MIN, BYTE_MAX),
-      memory_(Memory8::loadAddrDefault), regSet_() {}
+      validAddrDist(0, Memory8::memSize), memory_(Memory8::loadAddrDefault),
+      regSet_() {}
 
 void TestInstruction::runTests() {
   for (const auto &[desc, func] : functionMap_) {
@@ -93,12 +94,11 @@ void TestInstruction::Test00EE() {
 // JP addr
 void TestInstruction::Test1nnn() {
   const Byte instrId = 0x1;
-  const Address limit = 0x1000;
 
   InstructionSet8 iset(regSet_, memory_);
   regSet_.pc = Memory8::loadAddrDefault;
 
-  for (Address addr = 0; addr < limit; addr++) {
+  for (Address addr = 0; addr < Memory8::memSize; addr++) {
     Instruction opcode = BuildAddressInstruction(instrId, addr);
     iset.DecodeExecuteInstruction(opcode);
     assert((regSet_.pc == addr) && "PC address equality 0x1nnn");
@@ -108,7 +108,6 @@ void TestInstruction::Test1nnn() {
 // CALL addr
 void TestInstruction::Test2nnn() {
   const Byte instrId = 0x2;
-  const Address limit = 0x1000;
   const Address incr = 0x111;
 
   InstructionSet8 iset(regSet_, memory_);
@@ -117,7 +116,7 @@ void TestInstruction::Test2nnn() {
     regSet_.callStack.pop();
   }
 
-  for (Address addr = 0; addr < limit; addr += incr) {
+  for (Address addr = 0; addr < Memory8::memSize; addr += incr) {
     const auto prevSize = regSet_.callStack.size();
     const auto prevPc = regSet_.pc;
     Instruction opcode = BuildAddressInstruction(instrId, addr);
@@ -141,13 +140,12 @@ void TestInstruction::Test2nnn() {
 // SE Vx, byte
 void TestInstruction::Test3xkk() {
   const Byte hiByte = 0x30;
-  const Byte rcount = static_cast<Byte>(RegisterSet8::regCount);
 
   InstructionSet8 iset(regSet_, memory_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   // test Vx == kk
-  for (Byte regX = 0; regX < rcount; regX++) {
+  for (Byte regX = 0; regX < RegisterSet8::regCount; regX++) {
     for (int kk = 0; kk <= BYTE_MAX; kk++) {
       Byte val = static_cast<Byte>(kk);
       regSet_.registers.at(regX) = val;
@@ -159,7 +157,7 @@ void TestInstruction::Test3xkk() {
   }
 
   // test Vx != kk
-  for (Byte regX = 0; regX < rcount; regX++) {
+  for (Byte regX = 0; regX < RegisterSet8::regCount; regX++) {
     for (int kk = 0; kk <= BYTE_MAX; kk++) {
       Byte val = static_cast<Byte>(kk);
       regSet_.registers.at(regX) = (val == 0) ? 1 : val - 1;
@@ -174,13 +172,12 @@ void TestInstruction::Test3xkk() {
 // SNE Vx, byte
 void TestInstruction::Test4xkk() {
   const Byte hiByte = 0x40;
-  const Byte rcount = static_cast<Byte>(RegisterSet8::regCount);
 
   InstructionSet8 iset(regSet_, memory_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   // test Vx == kk
-  for (Byte regX = 0; regX < rcount; regX++) {
+  for (Byte regX = 0; regX < RegisterSet8::regCount; regX++) {
     for (int kk = 0; kk <= BYTE_MAX; kk++) {
       Byte val = static_cast<Byte>(kk);
       regSet_.registers.at(regX) = val;
@@ -192,7 +189,7 @@ void TestInstruction::Test4xkk() {
   }
 
   // test Vx != kk
-  for (Byte regX = 0; regX < rcount; regX++) {
+  for (Byte regX = 0; regX < RegisterSet8::regCount; regX++) {
     for (int kk = 0; kk <= BYTE_MAX; kk++) {
       Byte val = static_cast<Byte>(kk);
       regSet_.registers.at(regX) = (val == 0) ? 1 : val - 1;
@@ -207,14 +204,13 @@ void TestInstruction::Test4xkk() {
 // SE Vx, Vy
 void TestInstruction::Test5xy0() {
   const Byte hiByte = 0x50;
-  const Byte rcount = static_cast<Byte>(RegisterSet8::regCount);
 
   InstructionSet8 iset(regSet_, memory_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   // check Vx != Vy
-  for (Byte regX = 0; regX < rcount; regX++) {
-    for (Byte regY = 0; regY < rcount; regY++) {
+  for (Byte regX = 0; regX < RegisterSet8::regCount; regX++) {
+    for (Byte regY = 0; regY < RegisterSet8::regCount; regY++) {
       if (regX == regY) {
         continue;
       }
@@ -238,8 +234,8 @@ void TestInstruction::Test5xy0() {
   }
 
   // check Vx == Vy
-  for (Byte regX = 0; regX < rcount; regX++) {
-    for (Byte regY = 0; regY < rcount; regY++) {
+  for (Byte regX = 0; regX < RegisterSet8::regCount; regX++) {
+    for (Byte regY = 0; regY < RegisterSet8::regCount; regY++) {
       const auto val = byteDist(eng);
       regSet_.registers.at(regX) = val;
       regSet_.registers.at(regY) = val;
@@ -256,12 +252,11 @@ void TestInstruction::Test5xy0() {
 // LD Vx, byte
 void TestInstruction::Test6xkk() {
   const Byte hiByte = 0x60;
-  const Byte rcount = static_cast<Byte>(RegisterSet8::regCount);
 
   InstructionSet8 iset(regSet_, memory_);
   regSet_.pc = Memory8::loadAddrDefault;
 
-  for (Byte reg = 0; reg < rcount; reg++) {
+  for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
     for (int val = BYTE_MIN; val <= BYTE_MAX; val++) {
       Instruction opcode =
           bits8::fuseBytes((hiByte | reg), static_cast<Byte>(val));
@@ -275,12 +270,11 @@ void TestInstruction::Test6xkk() {
 // ADD Vx, byte
 void TestInstruction::Test7xkk() {
   const Byte hiByte = 0x70;
-  const Byte rcount = static_cast<Byte>(RegisterSet8::regCount);
 
   InstructionSet8 iset(regSet_, memory_);
   regSet_.pc = Memory8::loadAddrDefault;
 
-  for (Byte reg = 0; reg < rcount; reg++) {
+  for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
     for (int rval = 0; rval <= BYTE_MAX; rval++) {
       Byte rvb = static_cast<Byte>(rval);
       for (int ival = 0; ival <= BYTE_MAX; ival++) {
@@ -296,17 +290,20 @@ void TestInstruction::Test7xkk() {
   }
 }
 
+void TestInstruction::TestBlock8() {
+  // FIXME: implement sub-blocks
+}
+
 // SNE Vx, Vy
 void TestInstruction::Test9xy0() {
   const Byte hiByte = 0x90;
-  const Byte rcount = static_cast<Byte>(RegisterSet8::regCount);
 
   InstructionSet8 iset(regSet_, memory_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   // check Vx != Vy
-  for (Byte regX = 0; regX < rcount; regX++) {
-    for (Byte regY = 0; regY < rcount; regY++) {
+  for (Byte regX = 0; regX < RegisterSet8::regCount; regX++) {
+    for (Byte regY = 0; regY < RegisterSet8::regCount; regY++) {
       if (regX == regY) {
         continue;
       }
@@ -331,8 +328,8 @@ void TestInstruction::Test9xy0() {
   }
 
   // check Vx == Vy
-  for (Byte regX = 0; regX < rcount; regX++) {
-    for (Byte regY = 0; regY < rcount; regY++) {
+  for (Byte regX = 0; regX < RegisterSet8::regCount; regX++) {
+    for (Byte regY = 0; regY < RegisterSet8::regCount; regY++) {
       const auto val = byteDist(eng);
       regSet_.registers.at(regX) = val;
       regSet_.registers.at(regY) = val;
@@ -349,12 +346,11 @@ void TestInstruction::Test9xy0() {
 // LD I, addr
 void TestInstruction::TestAnnn() {
   const Byte instrId = 0xA;
-  const Address limit = 0x1000;
 
   InstructionSet8 iset(regSet_, memory_);
   regSet_.pc = Memory8::loadAddrDefault;
 
-  for (Address addr = 0; addr < limit; addr++) {
+  for (Address addr = 0; addr < Memory8::memSize; addr++) {
     Instruction opcode = BuildAddressInstruction(instrId, addr);
     iset.DecodeExecuteInstruction(opcode);
     assert((regSet_.regI == addr) && "Set register I 0xAnnn");
@@ -364,12 +360,11 @@ void TestInstruction::TestAnnn() {
 // JP V0, addr
 void TestInstruction::TestBnnn() {
   const Byte instrId = 0xB;
-  const Address limit = 0x1000;
 
   InstructionSet8 iset(regSet_, memory_);
   regSet_.pc = Memory8::loadAddrDefault;
 
-  for (Address addr = 0; addr < limit; addr++) {
+  for (Address addr = 0; addr < Memory8::memSize; addr++) {
     for (int val = 0; val <= BYTE_MAX; val++) {
       regSet_.registers.at(0) = static_cast<Byte>(val);
       Instruction opcode = BuildAddressInstruction(instrId, addr);
@@ -378,4 +373,148 @@ void TestInstruction::TestBnnn() {
              "Jump sum 0xBnnn");
     }
   }
+}
+
+void TestInstruction::TestBlockF() {
+  TestFx07();
+  TestFx15();
+  TestFx18();
+  TestFx1E();
+  TestFx29();
+  TestFx33();
+  TestFx55();
+  TestFx65();
+}
+
+// LD Vx, DT
+void TestInstruction::TestFx07() {
+  const Byte hiByte = 0xF0;
+  const Byte lowByte = 0x07;
+
+  InstructionSet8 iset(regSet_, memory_);
+  regSet_.pc = Memory8::loadAddrDefault;
+
+  for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
+    for (int val = 0; val <= BYTE_MAX; val++) {
+      regSet_.regDT = static_cast<Byte>(val);
+      Instruction opcode = bits8::fuseBytes((hiByte | reg), lowByte);
+      iset.DecodeExecuteInstruction(opcode);
+      assert((regSet_.registers.at(reg) == regSet_.regDT) &&
+             "Loading delay timer 0xFx07");
+    }
+  }
+}
+
+// LD DT, Vx
+void TestInstruction::TestFx15() {
+  const Byte hiByte = 0xF0;
+  const Byte lowByte = 0x15;
+
+  InstructionSet8 iset(regSet_, memory_);
+  regSet_.pc = Memory8::loadAddrDefault;
+
+  for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
+    for (int val = 0; val <= BYTE_MAX; val++) {
+      regSet_.registers.at(reg) = static_cast<Byte>(val);
+      Instruction opcode = bits8::fuseBytes((hiByte | reg), lowByte);
+      iset.DecodeExecuteInstruction(opcode);
+      assert((regSet_.registers.at(reg) == regSet_.regDT) &&
+             "Storing delay timer 0xFx15");
+    }
+  }
+}
+
+// LD ST, Vx
+void TestInstruction::TestFx18() {
+  const Byte hiByte = 0xF0;
+  const Byte lowByte = 0x18;
+
+  InstructionSet8 iset(regSet_, memory_);
+  regSet_.pc = Memory8::loadAddrDefault;
+
+  for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
+    for (int val = 0; val <= BYTE_MAX; val++) {
+      regSet_.registers.at(reg) = static_cast<Byte>(val);
+      Instruction opcode = bits8::fuseBytes((hiByte | reg), lowByte);
+      iset.DecodeExecuteInstruction(opcode);
+      assert((regSet_.registers.at(reg) == regSet_.regST) &&
+             "Storing sound timer 0xFx18");
+    }
+  }
+}
+
+// ADD I, Vx
+void TestInstruction::TestFx1E() {
+  const Byte hiByte = 0xF0;
+  const Byte lowByte = 0x1E;
+
+  InstructionSet8 iset(regSet_, memory_);
+  regSet_.pc = Memory8::loadAddrDefault;
+
+  const std::size_t testIter = 1000;
+  for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
+    for (std::size_t iter = 0; iter < testIter; iter++) {
+      auto addr = validAddrDist(eng);
+      auto val = byteDist(eng);
+
+      regSet_.regI = addr;
+      regSet_.registers.at(reg) = val;
+      Instruction opcode = bits8::fuseBytes((hiByte | reg), lowByte);
+      iset.DecodeExecuteInstruction(opcode);
+      assert((regSet_.regI == (addr + val)) && "Add instruction + reg 0xFx1E");
+    }
+  }
+}
+
+// LD F, Vx
+void TestInstruction::TestFx29() {
+  const std::map<Byte, Address> manualSpriteMap = {
+      {0x0, 0x50}, {0x1, 0x55}, {0x2, 0x5A}, {0x3, 0x5F},
+      {0x4, 0x64}, {0x5, 0x69}, {0x6, 0x6E}, {0x7, 0x73},
+      {0x8, 0x78}, {0x9, 0x7D}, {0xA, 0x82}, {0xB, 0x87},
+      {0xC, 0x8C}, {0xD, 0x91}, {0xE, 0x96}, {0xF, 0x9B}};
+
+  const Byte hiByte = 0xF0;
+  const Byte lowByte = 0x29;
+
+  InstructionSet8 iset(regSet_, memory_);
+  regSet_.pc = Memory8::loadAddrDefault;
+
+  // test valid sprites
+  for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
+    for (const auto &[digit, addr] : manualSpriteMap) {
+      regSet_.registers.at(reg) = digit;
+      Instruction opcode = bits8::fuseBytes((hiByte | reg), lowByte);
+      iset.DecodeExecuteInstruction(opcode);
+      assert((regSet_.regI == addr) && "Valid sprite load 0xFx29");
+    }
+  }
+
+  // test invalid sprites
+  const Byte invalid = 0x10;
+  for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
+    try {
+      regSet_.registers.at(reg) = invalid;
+      Instruction opcode = bits8::fuseBytes((hiByte | reg), lowByte);
+      iset.DecodeExecuteInstruction(opcode);
+      assert(false && "Invalid sprite load 0xFx29");
+    } catch (const std::out_of_range &err) {
+      std::ignore = err;
+    }
+  }
+}
+
+// LD B, Vx
+void TestInstruction::TestFx33() {
+  // FIXME: implement
+}
+
+// LD [I], Vx
+void TestInstruction::TestFx55() {
+  // FIXME: implement
+}
+
+// LD Vx, [I]
+void TestInstruction::TestFx65() {
+  // FIXME: implement
 }

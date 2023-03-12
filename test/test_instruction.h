@@ -47,17 +47,26 @@ private:
   void Test6xkk();
   void Test7xkk();
 
-  // FIXME add tests for 0x8XXX
+  void TestBlock8();
 
   void Test9xy0();
   void TestAnnn();
   void TestBnnn();
 
-  // FIXME add tests for 0xFXXX
+  void TestBlockF();
+  void TestFx07();
+  void TestFx15();
+  void TestFx18();
+  void TestFx1E();
+  void TestFx29();
+  void TestFx33();
+  void TestFx55();
+  void TestFx65();
 
   std::random_device rdev = {};
   std::default_random_engine eng;
   std::uniform_int_distribution<Byte> byteDist;
+  std::uniform_int_distribution<Address> validAddrDist;
 
   Memory8 memory_;
   RegisterSet8 regSet_;
@@ -71,9 +80,11 @@ private:
       {"Instruction 5xy0", &TestInstruction::Test5xy0},
       {"Instruction 6xkk", &TestInstruction::Test6xkk},
       {"Instruction 7xkk", &TestInstruction::Test7xkk},
+      {"Instruction Block 8000", &TestInstruction::TestBlock8},
       {"Instruction 9xy0", &TestInstruction::Test9xy0},
       {"Instruction Annn", &TestInstruction::TestAnnn},
-      {"Instruction Bnnn", &TestInstruction::TestBnnn}};
+      {"Instruction Bnnn", &TestInstruction::TestBnnn},
+      {"Instruction Block F000", &TestInstruction::TestBlockF}};
 };
 
 #endif /* TEST_INSTRUCTION_H */
