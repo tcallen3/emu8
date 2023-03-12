@@ -55,6 +55,10 @@ private:
 
   // FIXME add tests for 0xFXXX
 
+  std::random_device rdev = {};
+  std::default_random_engine eng;
+  std::uniform_int_distribution<Byte> byteDist;
+
   Memory8 memory_;
   RegisterSet8 regSet_;
 
