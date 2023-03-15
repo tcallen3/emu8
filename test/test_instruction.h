@@ -22,7 +22,9 @@
 #ifndef TEST_INSTRUCTION_H
 #define TEST_INSTRUCTION_H
 
+#include <functional>
 #include <map>
+#include <set>
 
 #include "instruction_set.h"
 #include "memory.h"
@@ -31,6 +33,7 @@
 
 class TestInstruction;
 using InstructionMemFn = void (TestInstruction::*)();
+using BinaryOp = std::function<Byte(Byte, Byte)>;
 
 class TestInstruction : public Test {
 public:
@@ -38,6 +41,8 @@ public:
   void runTests() override;
 
 private:
+  void RunArithmeticTests(Byte typeCode, const BinaryOp &binOp);
+
   void Test00EE();
   void Test1nnn();
   void Test2nnn();
@@ -48,6 +53,15 @@ private:
   void Test7xkk();
 
   void TestBlock8();
+  void Test8xy0();
+  void Test8xy1();
+  void Test8xy2();
+  void Test8xy3();
+  void Test8xy4();
+  void Test8xy5();
+  void Test8xy6();
+  void Test8xy7();
+  void Test8xyE();
 
   void Test9xy0();
   void TestAnnn();
@@ -62,6 +76,9 @@ private:
   void TestFx33();
   void TestFx55();
   void TestFx65();
+
+  static constexpr Byte arithmeticCode = 0x80;
+  const std::set<Byte> boundaryBytes = {0x0, 0x1, 0x8F, 0xFE, 0xFF};
 
   std::random_device rdev = {};
   std::default_random_engine eng;

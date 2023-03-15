@@ -20,11 +20,36 @@
  */
 
 #include <cassert>
-#include <functional>
 #include <iostream>
 
 #include "bits.h"
 #include "test_instruction.h"
+
+struct MidRegBytes {
+  Byte highByte;
+  Byte lowNibble;
+  Byte regX;
+  Byte regY;
+};
+
+static auto BuildMiddleRegInstruction(const MidRegBytes &rdata) -> Instruction {
+  // to produce instructions of the form NxyM
+  const Byte high = (rdata.highByte | rdata.regX);
+  const Byte low = (rdata.regY << (CHAR_BIT / 2)) | rdata.lowNibble;
+
+  return bits8::fuseBytes(high, low);
+}
+
+static auto BuildAddressInstruction(const Byte instrNib, Address addr)
+    -> Instruction {
+  const Byte shift = 12;
+
+  Instruction code = instrNib;
+  code <<= shift;
+  code |= addr;
+
+  return code;
+}
 
 TestInstruction::TestInstruction()
     : eng(rdev()), byteDist(BYTE_MIN, BYTE_MAX),
@@ -37,17 +62,6 @@ void TestInstruction::runTests() {
     std::invoke(func, this);
     std::cout << "PASSED\n";
   }
-}
-
-static auto BuildAddressInstruction(const Byte instrNib, Address addr)
-    -> Instruction {
-  const Byte shift = 12;
-
-  Instruction code = instrNib;
-  code <<= shift;
-  code |= addr;
-
-  return code;
 }
 
 // RET
@@ -291,7 +305,211 @@ void TestInstruction::Test7xkk() {
 }
 
 void TestInstruction::TestBlock8() {
-  // FIXME: implement sub-blocks
+  Test8xy0();
+  Test8xy1();
+  Test8xy2();
+  Test8xy3();
+  Test8xy4();
+  Test8xy5();
+  Test8xy6();
+  Test8xy7();
+  Test8xyE();
+}
+
+// LD Vx, Vy
+void TestInstruction::Test8xy0() {
+  const Byte typeCode = 0x0;
+  MidRegBytes rdata{TestInstruction::arithmeticCode, typeCode, 0x0, 0x0};
+
+  InstructionSet8 iset(regSet_, memory_);
+  regSet_.pc = Memory8::loadAddrDefault;
+
+  for (Byte regX = 0; regX < RegisterSet8::regCount; regX++) {
+    for (Byte regY = 0; regY < RegisterSet8::regCount; regY++) {
+      for (int val = 0; val <= BYTE_MAX; val++) {
+        regSet_.registers.at(regY) = static_cast<Byte>(val);
+        rdata.regX = regX;
+        rdata.regY = regY;
+
+        Instruction opcode = BuildMiddleRegInstruction(rdata);
+        iset.DecodeExecuteInstruction(opcode);
+        assert((regSet_.registers.at(regX) == regSet_.registers.at(regY)) &&
+               "Register equality 0x8xy0");
+      }
+    }
+  }
+}
+
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+void TestInstruction::RunArithmeticTests(const Byte typeCode,
+                                         const BinaryOp &binOp) {
+  MidRegBytes rdata{TestInstruction::arithmeticCode, typeCode, 0x0, 0x0};
+
+  InstructionSet8 iset(regSet_, memory_);
+  regSet_.pc = Memory8::loadAddrDefault;
+
+  // test distinct registers and special values
+  for (Byte regX = 0; regX < RegisterSet8::regCount; regX++) {
+    for (Byte regY = 0; regY < RegisterSet8::regCount; regY++) {
+      if (regX == regY) {
+        continue;
+      }
+      rdata.regX = regX;
+      rdata.regY = regY;
+
+      for (const auto &val1 : boundaryBytes) {
+        for (const auto &val2 : boundaryBytes) {
+          regSet_.registers.at(regX) = val1;
+          regSet_.registers.at(regY) = val2;
+          Instruction opcode = BuildMiddleRegInstruction(rdata);
+          iset.DecodeExecuteInstruction(opcode);
+
+          assert((regSet_.registers.at(regX) == binOp(val1, val2)) &&
+                 "Distinct registers and special values");
+        }
+      }
+    }
+  }
+
+  // test identical registers and special values
+  for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
+    rdata.regX = reg;
+    rdata.regY = reg;
+    for (const auto &bval : boundaryBytes) {
+      regSet_.registers.at(reg) = bval;
+      Instruction opcode = BuildMiddleRegInstruction(rdata);
+      iset.DecodeExecuteInstruction(opcode);
+
+      assert((regSet_.registers.at(reg) == binOp(bval, bval)) &&
+             "Identical registers and special values");
+    }
+  }
+
+  const int trials = 1000;
+
+  // test distinct registers and random values
+  for (Byte regX = 0; regX < RegisterSet8::regCount; regX++) {
+    for (Byte regY = 0; regY < RegisterSet8::regCount; regY++) {
+      if (regX == regY) {
+        continue;
+      }
+      rdata.regX = regX;
+      rdata.regY = regY;
+      for (int iter = 0; iter < trials; iter++) {
+        const auto val1 = byteDist(eng);
+        const auto val2 = byteDist(eng);
+
+        regSet_.registers.at(regX) = val1;
+        regSet_.registers.at(regY) = val2;
+        Instruction opcode = BuildMiddleRegInstruction(rdata);
+        iset.DecodeExecuteInstruction(opcode);
+
+        assert((regSet_.registers.at(regX) == binOp(val1, val2)) &&
+               "Distinct registers and random values");
+      }
+    }
+  }
+
+  // test identical registers and random values
+  for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
+    rdata.regX = reg;
+    rdata.regY = reg;
+    for (int iter = 0; iter < trials; iter++) {
+      const auto bval = byteDist(eng);
+
+      regSet_.registers.at(reg) = bval;
+      Instruction opcode = BuildMiddleRegInstruction(rdata);
+      iset.DecodeExecuteInstruction(opcode);
+
+      assert((regSet_.registers.at(reg) == binOp(bval, bval)) &&
+             "Identical registers and random values");
+    }
+  }
+}
+// NOLINTEND(readability-function-cognitive-complexity)
+
+// OR Vx, Vy
+void TestInstruction::Test8xy1() {
+  const Byte typeCode = 0x1;
+  auto binOp = [](Byte val1, Byte val2) {
+    return static_cast<Byte>(val1 | val2);
+  };
+  RunArithmeticTests(typeCode, binOp);
+}
+
+// AND Vx, Vy
+void TestInstruction::Test8xy2() {
+  const Byte typeCode = 0x2;
+  auto binOp = [](Byte val1, Byte val2) {
+    return static_cast<Byte>(val1 & val2);
+  };
+  RunArithmeticTests(typeCode, binOp);
+}
+
+// XOR Vx, Vy
+void TestInstruction::Test8xy3() {
+  const Byte typeCode = 0x3;
+  auto binOp = [](Byte val1, Byte val2) {
+    return static_cast<Byte>(val1 ^ val2);
+  };
+  RunArithmeticTests(typeCode, binOp);
+}
+
+// ADD Vx, Vy
+void TestInstruction::Test8xy4() {
+  const Byte typeCode = 0x4;
+  auto binOp = [](Byte val1, Byte val2) {
+    return static_cast<Byte>(val1 + val2);
+  };
+  RunArithmeticTests(typeCode, binOp);
+
+  // FIXME: add carry checks
+}
+
+// SUB Vx, Vy
+void TestInstruction::Test8xy5() {
+  const Byte typeCode = 0x5;
+  auto binOp = [](Byte val1, Byte val2) {
+    return static_cast<Byte>(val1 - val2);
+  };
+  RunArithmeticTests(typeCode, binOp);
+
+  // FIXME: add carry checks
+}
+
+// SHR Vx {, Vy}
+void TestInstruction::Test8xy6() {
+  const Byte typeCode = 0x6;
+  auto binOp = [](Byte val1, Byte val2) {
+    std::ignore = val2;
+    return static_cast<Byte>(val1 >> 1);
+  };
+  RunArithmeticTests(typeCode, binOp);
+
+  // FIXME: add carry checks
+}
+
+// SUBN Vx, Vy
+void TestInstruction::Test8xy7() {
+  const Byte typeCode = 0x7;
+  auto binOp = [](Byte val1, Byte val2) {
+    return static_cast<Byte>(val2 - val1);
+  };
+  RunArithmeticTests(typeCode, binOp);
+
+  // FIXME: add carry checks
+}
+
+// SHL Vx {, Vy}
+void TestInstruction::Test8xyE() {
+  const Byte typeCode = 0xE;
+  auto binOp = [](Byte val1, Byte val2) {
+    std::ignore = val2;
+    return static_cast<Byte>(val1 << 1);
+  };
+  RunArithmeticTests(typeCode, binOp);
+
+  // FIXME: add carry checks
 }
 
 // SNE Vx, Vy
