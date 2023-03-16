@@ -30,6 +30,7 @@
 struct RegisterSet8 {
   static constexpr std::size_t stackSize = 16;
   static constexpr Byte regCount = 16;
+  static constexpr Byte flagReg = 0xF;
   Byte regST = {0x0};
   Byte regDT = {0x0};
   Address regI = {0x0};

@@ -203,14 +203,13 @@ void InstructionSet8::Execute8xy4() {
   const Byte maxByte = 0xFF;
   auto [nibX, nibY] = GetMiddleNibbles(opcode_);
 
-  Word sum = static_cast<Word>(regSet_.registers[nibX]) +
-             static_cast<Word>(regSet_.registers[nibY]);
-
-  regSet_.registers.back() = (sum > maxByte) ? 1 : 0;
+  const Word sum = static_cast<Word>(regSet_.registers[nibX]) +
+                   static_cast<Word>(regSet_.registers[nibY]);
 
   auto [high, low] = bits8::splitWord(sum);
   std::ignore = high;
   regSet_.registers[nibX] = low;
+  regSet_.registers[RegisterSet8::flagReg] = (sum > maxByte) ? 1 : 0;
 }
 
 void InstructionSet8::Execute8xy5() {
@@ -219,9 +218,9 @@ void InstructionSet8::Execute8xy5() {
 
   const auto valX = regSet_.registers[nibX];
   const auto valY = regSet_.registers[nibY];
-  regSet_.registers.back() = (valX > valY) ? 1 : 0;
 
   regSet_.registers[nibX] = valX - valY;
+  regSet_.registers[RegisterSet8::flagReg] = (valX > valY) ? 1 : 0;
 }
 
 void InstructionSet8::Execute8xy6() {
@@ -231,8 +230,9 @@ void InstructionSet8::Execute8xy6() {
   std::ignore = nibY;
   const auto valX = regSet_.registers[nibX];
 
-  regSet_.registers.back() = bits8::getLsb(valX);
+  const Byte leastBit = bits8::getLsb(valX);
   regSet_.registers[nibX] = (valX >> 1);
+  regSet_.registers[RegisterSet8::flagReg] = leastBit;
 }
 
 void InstructionSet8::Execute8xy7() {
@@ -241,9 +241,9 @@ void InstructionSet8::Execute8xy7() {
 
   const auto valX = regSet_.registers[nibX];
   const auto valY = regSet_.registers[nibY];
-  regSet_.registers.back() = (valY > valX) ? 1 : 0;
 
   regSet_.registers[nibX] = valY - valX;
+  regSet_.registers[RegisterSet8::flagReg] = (valY > valX) ? 1 : 0;
 }
 
 void InstructionSet8::Execute8xyE() {
@@ -253,8 +253,9 @@ void InstructionSet8::Execute8xyE() {
   std::ignore = nibY;
   const auto valX = regSet_.registers[nibX];
 
-  regSet_.registers.back() = bits8::getMsb(valX);
+  const Byte mostBit = bits8::getMsb(valX);
   regSet_.registers[nibX] = (valX << 1);
+  regSet_.registers[RegisterSet8::flagReg] = mostBit;
 }
 
 void InstructionSet8::Execute9xy0() {
