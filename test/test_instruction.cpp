@@ -23,6 +23,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "bits.h"
 #include "test_instruction.h"
@@ -807,10 +808,60 @@ void TestInstruction::TestFx33() {
 
 // LD [I], Vx
 void TestInstruction::TestFx55() {
-  // FIXME: implement
+  const Byte hiByte = 0xF0;
+  const Byte lowByte = 0x55;
+
+  InstructionSet8 iset(regSet_, memory_);
+  regSet_.pc = Memory8::loadAddrDefault;
+  regSet_.regI = Memory8::loadAddrDefault;
+
+  for (Byte endReg = 0; endReg < RegisterSet8::regCount; endReg++) {
+    std::vector<Byte> bvec;
+    for (Byte reg = 0; reg <= endReg; reg++) {
+      const auto val = byteDist(eng);
+      regSet_.registers.at(reg) = val;
+      bvec.push_back(val);
+    }
+
+    Instruction opcode = bits8::fuseBytes((hiByte | endReg), lowByte);
+    iset.DecodeExecuteInstruction(opcode);
+
+    std::vector<Byte> resultVec;
+    memory_.fetchSequence(regSet_.regI, endReg + 1, resultVec);
+
+    assert((bvec.size() == resultVec.size()) && "Memory vector size 0xFx55");
+    assert(std::equal(bvec.begin(), bvec.end(), resultVec.begin()) &&
+           "Memory vector contents 0xFx55");
+  }
 }
 
 // LD Vx, [I]
 void TestInstruction::TestFx65() {
-  // FIXME: implement
+  const Byte hiByte = 0xF0;
+  const Byte lowByte = 0x65;
+
+  InstructionSet8 iset(regSet_, memory_);
+  regSet_.pc = Memory8::loadAddrDefault;
+  regSet_.regI = Memory8::loadAddrDefault;
+
+  for (Byte endReg = 0; endReg < RegisterSet8::regCount; endReg++) {
+    std::vector<Byte> bvec;
+    Address addr = regSet_.regI;
+    for (Byte reg = 0; reg <= endReg; reg++) {
+      const auto val = byteDist(eng);
+      memory_.setByte(addr, val);
+      bvec.push_back(val);
+      addr++;
+    }
+
+    Instruction opcode = bits8::fuseBytes((hiByte | endReg), lowByte);
+    iset.DecodeExecuteInstruction(opcode);
+
+    std::vector<Byte> resultVec(regSet_.registers.begin(),
+                                regSet_.registers.begin() + endReg + 1);
+
+    assert((bvec.size() == resultVec.size()) && "Memory vector size 0xFx65");
+    assert(std::equal(bvec.begin(), bvec.end(), resultVec.begin()) &&
+           "Memory vector contents 0xFx65");
+  }
 }
