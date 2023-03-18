@@ -21,6 +21,8 @@
 
 #include <cassert>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 #include "bits.h"
 #include "test_instruction.h"
@@ -32,7 +34,17 @@ struct MidRegBytes {
   Byte regY;
 };
 
-static auto BuildMiddleRegInstruction(const MidRegBytes &rdata) -> Instruction {
+struct TestRegisterState {
+  Byte regX;
+  Byte valX;
+  Byte regY;
+  Byte valY;
+  Byte result;
+  Byte expectedVal;
+};
+
+static auto
+BuildMiddleRegInstruction(const MidRegBytes &rdata) -> Instruction {
   // to produce instructions of the form NxyM
   const Byte high = (rdata.highByte | rdata.regX);
   const Byte low = (rdata.regY << (CHAR_BIT / 2)) | rdata.lowNibble;
@@ -340,6 +352,24 @@ void TestInstruction::Test8xy0() {
   }
 }
 
+static auto GenerateErrorText(const std::string &problem,
+                              const TestRegisterState &rstate) -> std::string {
+  std::stringstream err;
+  err << problem << " ";
+
+  err << "Register 0x" << std::hex << static_cast<int>(rstate.regX) << " = 0x"
+      << std::hex << static_cast<int>(rstate.valX) << ", ";
+
+  err << "Register 0x" << std::hex << static_cast<int>(rstate.regY) << " = 0x"
+      << std::hex << static_cast<int>(rstate.valY) << ", ";
+
+  err << "Output = 0x" << std::hex << static_cast<int>(rstate.result) << ", ";
+
+  err << "Expected = 0x" << std::hex << static_cast<int>(rstate.expectedVal);
+
+  return err.str();
+}
+
 // NOLINTBEGIN(readability-function-cognitive-complexity)
 void TestInstruction::RunArithmeticTests(const Byte typeCode,
                                          const BinaryOp &binOp) {
@@ -357,31 +387,27 @@ void TestInstruction::RunArithmeticTests(const Byte typeCode,
       rdata.regX = regX;
       rdata.regY = regY;
 
-      for (const auto &val1 : boundaryBytes) {
-        for (const auto &val2 : boundaryBytes) {
-          regSet_.registers.at(regX) = val1;
-          regSet_.registers.at(regY) = val2;
+      for (const auto &valX : boundaryBytes) {
+        for (const auto &valY : boundaryBytes) {
+          regSet_.registers.at(regX) = valX;
+          regSet_.registers.at(regY) = valY;
           Instruction opcode = BuildMiddleRegInstruction(rdata);
           iset.DecodeExecuteInstruction(opcode);
 
-          assert((regSet_.registers.at(regX) == binOp(val1, val2)) &&
-                 "Distinct registers and special values");
+          if (regSet_.registers.at(regX) != binOp(valX, valY)) {
+            const TestRegisterState currState{regX,
+                                              valX,
+                                              regY,
+                                              valY,
+                                              regSet_.registers.at(regX),
+                                              binOp(valX, valY)};
+            std::stringstream err;
+            err << "Operation " << std::hex << opcode << " failed.";
+            auto desc = GenerateErrorText(err.str(), currState);
+            throw std::runtime_error(desc);
+          }
         }
       }
-    }
-  }
-
-  // test identical registers and special values
-  for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
-    rdata.regX = reg;
-    rdata.regY = reg;
-    for (const auto &bval : boundaryBytes) {
-      regSet_.registers.at(reg) = bval;
-      Instruction opcode = BuildMiddleRegInstruction(rdata);
-      iset.DecodeExecuteInstruction(opcode);
-
-      assert((regSet_.registers.at(reg) == binOp(bval, bval)) &&
-             "Identical registers and special values");
     }
   }
 
@@ -396,33 +422,48 @@ void TestInstruction::RunArithmeticTests(const Byte typeCode,
       rdata.regX = regX;
       rdata.regY = regY;
       for (int iter = 0; iter < trials; iter++) {
-        const auto val1 = byteDist(eng);
-        const auto val2 = byteDist(eng);
+        const auto valX = byteDist(eng);
+        const auto valY = byteDist(eng);
 
-        regSet_.registers.at(regX) = val1;
-        regSet_.registers.at(regY) = val2;
+        regSet_.registers.at(regX) = valX;
+        regSet_.registers.at(regY) = valY;
         Instruction opcode = BuildMiddleRegInstruction(rdata);
         iset.DecodeExecuteInstruction(opcode);
 
-        assert((regSet_.registers.at(regX) == binOp(val1, val2)) &&
-               "Distinct registers and random values");
+        if (regSet_.registers.at(regX) != binOp(valX, valY)) {
+          const TestRegisterState currState{regX,
+                                            valX,
+                                            regY,
+                                            valY,
+                                            regSet_.registers.at(regX),
+                                            binOp(valX, valY)};
+          std::stringstream err;
+          err << "Operation " << std::hex << opcode << " failed.";
+          auto desc = GenerateErrorText(err.str(), currState);
+          throw std::runtime_error(desc);
+        }
       }
     }
   }
 
-  // test identical registers and random values
+  // test identical registers and all Byte values
   for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
     rdata.regX = reg;
     rdata.regY = reg;
-    for (int iter = 0; iter < trials; iter++) {
-      const auto bval = byteDist(eng);
-
+    for (int ival = 0; ival <= BYTE_MAX; ival++) {
+      const Byte bval = static_cast<Byte>(ival);
       regSet_.registers.at(reg) = bval;
       Instruction opcode = BuildMiddleRegInstruction(rdata);
       iset.DecodeExecuteInstruction(opcode);
 
-      assert((regSet_.registers.at(reg) == binOp(bval, bval)) &&
-             "Identical registers and random values");
+      if (regSet_.registers.at(reg) != binOp(bval, bval)) {
+        const TestRegisterState currState{
+            reg, bval, reg, bval, regSet_.registers.at(reg), binOp(bval, bval)};
+        std::stringstream err;
+        err << "Operation " << std::hex << opcode << " failed.";
+        auto desc = GenerateErrorText(err.str(), currState);
+        throw std::runtime_error(desc);
+      }
     }
   }
 }
