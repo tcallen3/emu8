@@ -41,7 +41,8 @@ public:
   void runTests() override;
 
 private:
-  void RunArithmeticTests(Byte typeCode, const BinaryOp &binOp);
+  void RunArithmeticTests(Byte typeCode, const BinaryOp &binOp,
+                          const BinaryOp &flagOp);
 
   void Test00EE();
   void Test1nnn();

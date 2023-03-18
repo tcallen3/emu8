@@ -372,15 +372,16 @@ static auto GenerateErrorText(const std::string &problem,
 
 // NOLINTBEGIN(readability-function-cognitive-complexity)
 void TestInstruction::RunArithmeticTests(const Byte typeCode,
-                                         const BinaryOp &binOp) {
+                                         const BinaryOp &binOp,
+                                         const BinaryOp &flagOp) {
   MidRegBytes rdata{TestInstruction::arithmeticCode, typeCode, 0x0, 0x0};
 
   InstructionSet8 iset(regSet_, memory_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   // test distinct registers and special values
-  for (Byte regX = 0; regX < RegisterSet8::regCount; regX++) {
-    for (Byte regY = 0; regY < RegisterSet8::regCount; regY++) {
+  for (Byte regX = 0; regX < RegisterSet8::flagReg; regX++) {
+    for (Byte regY = 0; regY < RegisterSet8::flagReg; regY++) {
       if (regX == regY) {
         continue;
       }
@@ -406,6 +407,17 @@ void TestInstruction::RunArithmeticTests(const Byte typeCode,
             auto desc = GenerateErrorText(err.str(), currState);
             throw std::runtime_error(desc);
           }
+
+          const auto fval = regSet_.registers.at(RegisterSet8::flagReg);
+          if (flagOp && (fval != flagOp(valX, valY))) {
+            const TestRegisterState currState{regX, valX, regY,
+                                              valY, fval, flagOp(valX, valY)};
+            std::stringstream err;
+            err << "Operation " << std::hex << opcode
+                << " failed with incorrect flag value.";
+            auto desc = GenerateErrorText(err.str(), currState);
+            throw std::runtime_error(desc);
+          }
         }
       }
     }
@@ -414,8 +426,8 @@ void TestInstruction::RunArithmeticTests(const Byte typeCode,
   const int trials = 1000;
 
   // test distinct registers and random values
-  for (Byte regX = 0; regX < RegisterSet8::regCount; regX++) {
-    for (Byte regY = 0; regY < RegisterSet8::regCount; regY++) {
+  for (Byte regX = 0; regX < RegisterSet8::flagReg; regX++) {
+    for (Byte regY = 0; regY < RegisterSet8::flagReg; regY++) {
       if (regX == regY) {
         continue;
       }
@@ -442,12 +454,23 @@ void TestInstruction::RunArithmeticTests(const Byte typeCode,
           auto desc = GenerateErrorText(err.str(), currState);
           throw std::runtime_error(desc);
         }
+
+        const auto fval = regSet_.registers.at(RegisterSet8::flagReg);
+        if (flagOp && (fval != flagOp(valX, valY))) {
+          const TestRegisterState currState{regX, valX, regY,
+                                            valY, fval, flagOp(valX, valY)};
+          std::stringstream err;
+          err << "Operation " << std::hex << opcode
+              << " failed with incorrect flag value.";
+          auto desc = GenerateErrorText(err.str(), currState);
+          throw std::runtime_error(desc);
+        }
       }
     }
   }
 
   // test identical registers and all Byte values
-  for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
+  for (Byte reg = 0; reg < RegisterSet8::flagReg; reg++) {
     rdata.regX = reg;
     rdata.regY = reg;
     for (int ival = 0; ival <= BYTE_MAX; ival++) {
@@ -464,6 +487,17 @@ void TestInstruction::RunArithmeticTests(const Byte typeCode,
         auto desc = GenerateErrorText(err.str(), currState);
         throw std::runtime_error(desc);
       }
+
+      const auto fval = regSet_.registers.at(RegisterSet8::flagReg);
+      if (flagOp && (fval != flagOp(bval, bval))) {
+        const TestRegisterState currState{reg,  bval, reg,
+                                          bval, fval, flagOp(bval, bval)};
+        std::stringstream err;
+        err << "Operation " << std::hex << opcode
+            << " failed with incorrect flag value.";
+        auto desc = GenerateErrorText(err.str(), currState);
+        throw std::runtime_error(desc);
+      }
     }
   }
 }
@@ -475,7 +509,7 @@ void TestInstruction::Test8xy1() {
   auto binOp = [](Byte val1, Byte val2) {
     return static_cast<Byte>(val1 | val2);
   };
-  RunArithmeticTests(typeCode, binOp);
+  RunArithmeticTests(typeCode, binOp, {});
 }
 
 // AND Vx, Vy
@@ -484,7 +518,7 @@ void TestInstruction::Test8xy2() {
   auto binOp = [](Byte val1, Byte val2) {
     return static_cast<Byte>(val1 & val2);
   };
-  RunArithmeticTests(typeCode, binOp);
+  RunArithmeticTests(typeCode, binOp, {});
 }
 
 // XOR Vx, Vy
@@ -493,7 +527,7 @@ void TestInstruction::Test8xy3() {
   auto binOp = [](Byte val1, Byte val2) {
     return static_cast<Byte>(val1 ^ val2);
   };
-  RunArithmeticTests(typeCode, binOp);
+  RunArithmeticTests(typeCode, binOp, {});
 }
 
 // ADD Vx, Vy
@@ -502,9 +536,10 @@ void TestInstruction::Test8xy4() {
   auto binOp = [](Byte val1, Byte val2) {
     return static_cast<Byte>(val1 + val2);
   };
-  RunArithmeticTests(typeCode, binOp);
-
-  // FIXME: add carry checks
+  auto flagOp = [](Byte val1, Byte val2) {
+    return ((val1 + val2) > BYTE_MAX) ? 1 : 0;
+  };
+  RunArithmeticTests(typeCode, binOp, flagOp);
 }
 
 // SUB Vx, Vy
@@ -513,9 +548,8 @@ void TestInstruction::Test8xy5() {
   auto binOp = [](Byte val1, Byte val2) {
     return static_cast<Byte>(val1 - val2);
   };
-  RunArithmeticTests(typeCode, binOp);
-
-  // FIXME: add carry checks
+  auto flagOp = [](Byte val1, Byte val2) { return (val1 > val2) ? 1 : 0; };
+  RunArithmeticTests(typeCode, binOp, flagOp);
 }
 
 // SHR Vx {, Vy}
@@ -525,9 +559,11 @@ void TestInstruction::Test8xy6() {
     std::ignore = val2;
     return static_cast<Byte>(val1 >> 1);
   };
-  RunArithmeticTests(typeCode, binOp);
-
-  // FIXME: add carry checks
+  auto flagOp = [](Byte val1, Byte val2) {
+    std::ignore = val2;
+    return bits8::getLsb(val1);
+  };
+  RunArithmeticTests(typeCode, binOp, flagOp);
 }
 
 // SUBN Vx, Vy
@@ -536,9 +572,8 @@ void TestInstruction::Test8xy7() {
   auto binOp = [](Byte val1, Byte val2) {
     return static_cast<Byte>(val2 - val1);
   };
-  RunArithmeticTests(typeCode, binOp);
-
-  // FIXME: add carry checks
+  auto flagOp = [](Byte val1, Byte val2) { return (val2 > val1) ? 1 : 0; };
+  RunArithmeticTests(typeCode, binOp, flagOp);
 }
 
 // SHL Vx {, Vy}
@@ -548,9 +583,11 @@ void TestInstruction::Test8xyE() {
     std::ignore = val2;
     return static_cast<Byte>(val1 << 1);
   };
-  RunArithmeticTests(typeCode, binOp);
-
-  // FIXME: add carry checks
+  auto flagOp = [](Byte val1, Byte val2) {
+    std::ignore = val2;
+    return bits8::getMsb(val1);
+  };
+  RunArithmeticTests(typeCode, binOp, flagOp);
 }
 
 // SNE Vx, Vy
