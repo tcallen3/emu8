@@ -801,9 +801,42 @@ void TestInstruction::TestFx29() {
   }
 }
 
+static auto GetBcd(Byte val) -> std::vector<Byte> {
+  const int base = 10;
+
+  const Byte ones = static_cast<Byte>(val % base);
+  const Byte tens = static_cast<Byte>((val / base) % base);
+  const Byte hundreds = static_cast<Byte>((val / (base * base)) % base);
+
+  return {hundreds, tens, ones};
+}
+
 // LD B, Vx
 void TestInstruction::TestFx33() {
-  // FIXME: implement
+  const Byte hiByte = 0xF0;
+  const Byte lowByte = 0x33;
+  const Byte places = 3;
+
+  InstructionSet8 iset(regSet_, memory_);
+  regSet_.pc = Memory8::loadAddrDefault;
+  regSet_.regI = Memory8::loadAddrDefault;
+
+  for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
+    for (int val = 0; val <= BYTE_MAX; val++) {
+      const auto bval = static_cast<Byte>(val);
+      regSet_.registers.at(reg) = bval;
+      Instruction opcode = bits8::fuseBytes((hiByte | reg), lowByte);
+      iset.DecodeExecuteInstruction(opcode);
+
+      std::vector<Byte> result;
+      memory_.fetchSequence(regSet_.regI, places, result);
+
+      std::vector<Byte> expectVec = GetBcd(bval);
+      assert((result.size() == expectVec.size()) && "BCD vector size 0xFx33");
+      assert(std::equal(result.begin(), result.end(), expectVec.begin()) &&
+             "BCD vector contents 0xFx33");
+    }
+  }
 }
 
 // LD [I], Vx
