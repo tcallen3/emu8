@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef EMU8_INSTRUCTION_SET
-#define EMU8_INSTRUCTION_SET
+#ifndef EMU8_INSTRUCTION_SET_H
+#define EMU8_INSTRUCTION_SET_H
 
 #include <map>
 #include <random>
@@ -138,4 +138,4 @@ private:
   void ExecuteFx65();
 };
 
-#endif /* EMU8_INSTRUCTION_SET */
+#endif /* EMU8_INSTRUCTION_SET_H */
