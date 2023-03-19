@@ -19,10 +19,16 @@
  *
  */
 
+#include "interface.h"
 #include "memory.h"
 
 auto main() -> int {
   Memory8 mem(Memory8::loadAddrDefault);
+
+  const int scaling = 10;
+  Interface8 interface("Test", scaling);
+
+  interface.TempTest();
 
   return 0;
 }
