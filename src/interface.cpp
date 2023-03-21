@@ -19,6 +19,8 @@
  *
  */
 
+#include <algorithm>
+#include <cassert>
 #include <stdexcept>
 
 #include "interface.h"
@@ -120,20 +122,75 @@ Interface8::~Interface8() {
   SDL_Quit();
 }
 
+void Interface8::RenderSurface() {
+  if (SDL_RenderClear(renderer_) < 0) {
+    errStream_ << "Error clearing renderer: ";
+    errStream_ << SDL_GetError();
+    throw std::runtime_error(errStream_.str());
+  }
+
+  screenTexture_ = SDL_CreateTextureFromSurface(renderer_, surface_);
+  if (screenTexture_ == nullptr) {
+    errStream_ << "Could not create screen texture: ";
+    errStream_ << SDL_GetError();
+    throw std::runtime_error(errStream_.str());
+  }
+
+  if (SDL_RenderCopy(renderer_, screenTexture_, nullptr, nullptr) < 0) {
+    errStream_ << "Error in render copy: ";
+    errStream_ << SDL_GetError();
+    throw std::runtime_error(errStream_.str());
+  }
+
+  SDL_RenderPresent(renderer_);
+  SDL_DestroyTexture(screenTexture_);
+}
+
+void Interface8::ClearScreen() {
+  std::vector<Byte> bitVec(textureSize, 0);
+  Byte *pix = static_cast<Byte *>(surface_->pixels);
+  std::copy(bitVec.begin(), bitVec.end(), pix);
+
+  RenderSurface();
+}
+
+bool Interface8::UpdateScreen(const std::vector<Byte> &newScreen) {
+  assert(newScreen.size() == textureSize);
+
+  std::vector<Byte> currScreen;
+  Byte *pix = static_cast<Byte *>(surface_->pixels);
+  std::copy_n(pix, textureSize, std::back_inserter(currScreen));
+
+  bool flipped = false;
+  std::vector<Byte> finalScreen(textureSize, 0);
+  for (std::size_t index = 0; index < newScreen.size(); index++) {
+    finalScreen[index] = currScreen[index] ^ newScreen[index];
+
+    // bitwise check that we haven't flipped off pixels, look at truth table
+    // for XOR plus AND to confirm this is correct
+    if ((currScreen[index] & finalScreen[index]) != currScreen[index]) {
+      flipped = true;
+    }
+  }
+
+  std::copy(finalScreen.begin(), finalScreen.end(), pix);
+  RenderSurface();
+
+  return flipped;
+}
+
 // see if we can get something to show
 void Interface8::TempTest() {
   const Byte filled = 0xFF;
 
-  int i = 0;
-  while (i < fieldWidth * fieldHeight / CHAR_BIT) {
+  std::size_t i = 0;
+  while (i < textureSize) {
+    std::vector<Byte> bitVec(textureSize, 0);
+    bitVec[i] = filled;
     Byte *pix = static_cast<Byte *>(surface_->pixels);
-    pix[i] = filled;
 
-    SDL_RenderClear(renderer_);
-    screenTexture_ = SDL_CreateTextureFromSurface(renderer_, surface_);
-    SDL_RenderCopy(renderer_, screenTexture_, nullptr, nullptr);
-    SDL_RenderPresent(renderer_);
-    SDL_DestroyTexture(screenTexture_);
+    std::copy(bitVec.begin(), bitVec.end(), pix);
+    RenderSurface();
 
     i++;
   }

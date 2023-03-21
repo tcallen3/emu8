@@ -26,6 +26,7 @@
 #include <array>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "common.h"
 
@@ -34,6 +35,8 @@ public:
   static constexpr int fieldWidth = 64;
   static constexpr int fieldHeight = 32;
   static constexpr int defaultScaling = 10;
+  static constexpr std::size_t textureSize =
+      fieldWidth * fieldHeight / CHAR_BIT;
 
   explicit Interface8(const std::string &romFile, int scaling = defaultScaling);
   ~Interface8();
@@ -43,6 +46,9 @@ public:
   Interface8(Interface8 &&other) = delete;
   auto operator=(const Interface8 &other) -> Interface8 & = delete;
   auto operator=(Interface8 &&other) -> Interface8 & = delete;
+
+  void ClearScreen();
+  bool UpdateScreen(const std::vector<Byte> &newScreen);
 
   void TempTest();
 
@@ -66,6 +72,7 @@ private:
   void CreateWindow(const std::string &title);
   void CreateRenderer();
   void CreateSurface();
+  void RenderSurface();
 };
 
 #endif /* EMU8_INTERFACE_H */
