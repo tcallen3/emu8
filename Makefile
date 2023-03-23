@@ -27,7 +27,7 @@ CXXFLAGS += -Wwrite-strings
 LDEXTRA := -fsanitize=address
 #LDEXTRA := -flto
 
-LDFLAGS := $(LDEXTRA) -lSDL2
+LDFLAGS := $(LDEXTRA) -lSDL2 -lboost_program_options
 
 BUILD := build
 BIN := bin

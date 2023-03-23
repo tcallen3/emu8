@@ -48,7 +48,7 @@ public:
   auto operator=(Interface8 &&other) -> Interface8 & = delete;
 
   void ClearScreen();
-  bool UpdateScreen(const std::vector<Byte> &newScreen);
+  auto UpdateScreen(const std::vector<Byte> &newScreen) -> bool;
 
   void TempTest();
 

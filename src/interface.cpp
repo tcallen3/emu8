@@ -154,7 +154,7 @@ void Interface8::ClearScreen() {
   RenderSurface();
 }
 
-bool Interface8::UpdateScreen(const std::vector<Byte> &newScreen) {
+auto Interface8::UpdateScreen(const std::vector<Byte> &newScreen) -> bool {
   assert(newScreen.size() == textureSize);
 
   std::vector<Byte> currScreen;
