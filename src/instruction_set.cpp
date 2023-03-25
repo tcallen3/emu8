@@ -354,14 +354,32 @@ void InstructionSet8::ExecuteDxyn() {
 
 void InstructionSet8::ExecuteEx9E() {
   // SKP Vx - skip next instruction if key with the value of Vx is pressed
+  const auto reg = GetSingleRegNibble(opcode_);
+  const auto val = regSet_.registers[reg];
 
-  // FIXME: implement
+  if (val > Interface8::keyMax) {
+    const std::string msg = "Invalid key requested in instruction Ex9E: ";
+    throw std::out_of_range(msg + std::to_string(val));
+  }
+
+  if (interface_.KeyPressed(val)) {
+    regSet_.pc += 2;
+  }
 }
 
 void InstructionSet8::ExecuteExA1() {
   // SKNP Vx - skip next instruction if key with the value of Vx is not pressed
+  const auto reg = GetSingleRegNibble(opcode_);
+  const auto val = regSet_.registers[reg];
 
-  // FIXME: implement
+  if (val > Interface8::keyMax) {
+    const std::string msg = "Invalid key requested in instruction ExA1: ";
+    throw std::out_of_range(msg + std::to_string(val));
+  }
+
+  if (!interface_.KeyPressed(val)) {
+    regSet_.pc += 2;
+  }
 }
 
 void InstructionSet8::ExecuteFx07() {
@@ -373,8 +391,9 @@ void InstructionSet8::ExecuteFx07() {
 
 void InstructionSet8::ExecuteFx0A() {
   // LD Vx, K - wait for a key press and store the value of the key in Vx
-
-  // FIXME: implment
+  const auto reg = GetSingleRegNibble(opcode_);
+  const auto val = interface_.GetKeyPress();
+  regSet_.registers[reg] = val;
 }
 
 void InstructionSet8::ExecuteFx15() {

@@ -41,6 +41,7 @@ Interface8::Interface8(const std::string &romName, int scaling)
   CreateWindow(title);
   CreateRenderer();
   CreateSurface();
+  FillScancodeMap();
 }
 
 void Interface8::CreateWindow(const std::string &title) {
@@ -101,6 +102,13 @@ void Interface8::CreateSurface() {
     errStream_ << "SDL surface palette error: ";
     errStream_ << SDL_GetError();
     throw std::runtime_error(errStream_.str());
+  }
+}
+
+void Interface8::FillScancodeMap() {
+  scancodeMapping_.clear();
+  for (const auto &[keyVal, scanCode] : keyboardMapping_) {
+    scancodeMapping_.insert(std::pair{scanCode, keyVal});
   }
 }
 
@@ -177,6 +185,39 @@ auto Interface8::UpdateScreen(const std::vector<Byte> &newScreen) -> bool {
   RenderSurface();
 
   return flipped;
+}
+
+auto Interface8::KeyPressed(Byte keyVal) -> bool {
+  auto scanCode = keyboardMapping_.at(keyVal);
+
+  int size = 0;
+  const auto *keyArray = SDL_GetKeyboardState(&size);
+  assert(scanCode < size);
+
+  return (keyArray[scanCode] == 1); // NOLINT
+}
+
+// helper function to clarify keypress logic
+auto Interface8::ValidKeyPress(const SDL_Event &event) -> bool {
+  // must be key press event
+  if (event.type != SDL_KEYDOWN) {
+    return false;
+  }
+
+  // key scan code must represent a known Chip-8 key
+  return (scancodeMapping_.count(event.key.keysym.scancode) == 1);
+}
+
+auto Interface8::GetKeyPress() -> Byte {
+  SDL_Event event;
+  do {
+    if (SDL_WaitEvent(&event) == 0) {
+      const std::string msg = "Error waiting for SDL key press event: ";
+      throw std::runtime_error(msg + SDL_GetError());
+    }
+  } while (!ValidKeyPress(event));
+
+  return scancodeMapping_.at(event.key.keysym.scancode);
 }
 
 // see if we can get something to show
