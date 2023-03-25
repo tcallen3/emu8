@@ -140,8 +140,8 @@ private:
   void ExecuteFx55();
   void ExecuteFx65();
 
-  auto WrapSpriteToDisplay(const std::vector<Byte> &spriteVec, Byte posX,
-                           Byte posY) -> std::vector<Byte> const;
+  static auto WrapSpriteToDisplay(const std::vector<Byte> &spriteVec, Byte posX,
+                                  Byte posY) -> std::vector<Byte>;
 };
 
 #endif /* EMU8_INSTRUCTION_SET_H */

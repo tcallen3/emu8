@@ -297,7 +297,7 @@ void InstructionSet8::ExecuteCxkk() {
 
 auto InstructionSet8::WrapSpriteToDisplay(const std::vector<Byte> &spriteVec,
                                           Byte posX, Byte posY)
-    -> std::vector<Byte> const {
+    -> std::vector<Byte> {
   std::vector<Byte> fullScreen(Interface8::textureSize, 0x0);
 
   const std::size_t bitPosX = posX % Interface8::fieldWidth;
@@ -313,9 +313,7 @@ auto InstructionSet8::WrapSpriteToDisplay(const std::vector<Byte> &spriteVec,
   const std::size_t colLowX = bitPosX / CHAR_BIT;
   const std::size_t colHighX = (colLowX + 1) % stride;
 
-
-  for (std::size_t index = 0; index < spriteVec.size(); index++) {
-    Byte curr = spriteVec[index];
+  for (const auto &curr : spriteVec) {
     Byte lowByte = static_cast<Byte>(curr >> rightShift);
     Byte highByte = static_cast<Byte>(curr << leftShift);
 
