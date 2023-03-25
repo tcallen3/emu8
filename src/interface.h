@@ -38,7 +38,7 @@ public:
   static constexpr std::size_t textureSize =
       fieldWidth * fieldHeight / CHAR_BIT;
 
-  explicit Interface8(const std::string &romFile, int scaling = defaultScaling);
+  explicit Interface8(const std::string &romName, int scaling = defaultScaling);
   ~Interface8();
 
   // avoid working with SDL move/copy semantics

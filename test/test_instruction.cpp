@@ -67,7 +67,7 @@ static auto BuildAddressInstruction(const Byte instrNib, Address addr)
 TestInstruction::TestInstruction()
     : eng(rdev()), byteDist(BYTE_MIN, BYTE_MAX),
       validAddrDist(0, Memory8::memSize), memory_(Memory8::loadAddrDefault),
-      regSet_() {}
+      regSet_(), interface_("test") {}
 
 void TestInstruction::runTests() {
   for (const auto &[desc, func] : functionMap_) {
@@ -94,7 +94,7 @@ void TestInstruction::Test00EE() {
     addr += incr;
   }
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
   const Instruction opcode = 0x00EE;
 
@@ -122,7 +122,7 @@ void TestInstruction::Test00EE() {
 void TestInstruction::Test1nnn() {
   const Byte instrId = 0x1;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   for (Address addr = 0; addr < Memory8::memSize; addr++) {
@@ -137,7 +137,7 @@ void TestInstruction::Test2nnn() {
   const Byte instrId = 0x2;
   const Address incr = 0x111;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
   while (!regSet_.callStack.empty()) {
     regSet_.callStack.pop();
@@ -168,7 +168,7 @@ void TestInstruction::Test2nnn() {
 void TestInstruction::Test3xkk() {
   const Byte hiByte = 0x30;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   // test Vx == kk
@@ -200,7 +200,7 @@ void TestInstruction::Test3xkk() {
 void TestInstruction::Test4xkk() {
   const Byte hiByte = 0x40;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   // test Vx == kk
@@ -232,7 +232,7 @@ void TestInstruction::Test4xkk() {
 void TestInstruction::Test5xy0() {
   const Byte hiByte = 0x50;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   // check Vx != Vy
@@ -280,7 +280,7 @@ void TestInstruction::Test5xy0() {
 void TestInstruction::Test6xkk() {
   const Byte hiByte = 0x60;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
@@ -298,7 +298,7 @@ void TestInstruction::Test6xkk() {
 void TestInstruction::Test7xkk() {
   const Byte hiByte = 0x70;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
@@ -334,7 +334,7 @@ void TestInstruction::Test8xy0() {
   const Byte typeCode = 0x0;
   MidRegBytes rdata{TestInstruction::arithmeticCode, typeCode, 0x0, 0x0};
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   for (Byte regX = 0; regX < RegisterSet8::regCount; regX++) {
@@ -377,7 +377,7 @@ void TestInstruction::RunArithmeticTests(const Byte typeCode,
                                          const BinaryOp &flagOp) {
   MidRegBytes rdata{TestInstruction::arithmeticCode, typeCode, 0x0, 0x0};
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   // test distinct registers and special values
@@ -595,7 +595,7 @@ void TestInstruction::Test8xyE() {
 void TestInstruction::Test9xy0() {
   const Byte hiByte = 0x90;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   // check Vx != Vy
@@ -644,7 +644,7 @@ void TestInstruction::Test9xy0() {
 void TestInstruction::TestAnnn() {
   const Byte instrId = 0xA;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   for (Address addr = 0; addr < Memory8::memSize; addr++) {
@@ -658,7 +658,7 @@ void TestInstruction::TestAnnn() {
 void TestInstruction::TestBnnn() {
   const Byte instrId = 0xB;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   for (Address addr = 0; addr < Memory8::memSize; addr++) {
@@ -688,7 +688,7 @@ void TestInstruction::TestFx07() {
   const Byte hiByte = 0xF0;
   const Byte lowByte = 0x07;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
@@ -707,7 +707,7 @@ void TestInstruction::TestFx15() {
   const Byte hiByte = 0xF0;
   const Byte lowByte = 0x15;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
@@ -726,7 +726,7 @@ void TestInstruction::TestFx18() {
   const Byte hiByte = 0xF0;
   const Byte lowByte = 0x18;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   for (Byte reg = 0; reg < RegisterSet8::regCount; reg++) {
@@ -745,7 +745,7 @@ void TestInstruction::TestFx1E() {
   const Byte hiByte = 0xF0;
   const Byte lowByte = 0x1E;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   const std::size_t testIter = 1000;
@@ -774,7 +774,7 @@ void TestInstruction::TestFx29() {
   const Byte hiByte = 0xF0;
   const Byte lowByte = 0x29;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
 
   // test valid sprites
@@ -817,7 +817,7 @@ void TestInstruction::TestFx33() {
   const Byte lowByte = 0x33;
   const Byte places = 3;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
   regSet_.regI = Memory8::loadAddrDefault;
 
@@ -844,7 +844,7 @@ void TestInstruction::TestFx55() {
   const Byte hiByte = 0xF0;
   const Byte lowByte = 0x55;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
   regSet_.regI = Memory8::loadAddrDefault;
 
@@ -873,7 +873,7 @@ void TestInstruction::TestFx65() {
   const Byte hiByte = 0xF0;
   const Byte lowByte = 0x65;
 
-  InstructionSet8 iset(regSet_, memory_);
+  InstructionSet8 iset(regSet_, memory_, interface_);
   regSet_.pc = Memory8::loadAddrDefault;
   regSet_.regI = Memory8::loadAddrDefault;
 

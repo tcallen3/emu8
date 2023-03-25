@@ -25,7 +25,9 @@
 #include <map>
 #include <random>
 #include <set>
+#include <vector>
 
+#include "interface.h"
 #include "memory.h"
 #include "register_set.h"
 
@@ -35,7 +37,7 @@ using CodeMap = std::map<Word, InstructionFn>;
 
 class InstructionSet8 {
 public:
-  InstructionSet8(RegisterSet8 &reg, Memory8 &mem);
+  InstructionSet8(RegisterSet8 &reg, Memory8 &mem, Interface8 &interface);
   void DecodeExecuteInstruction(Instruction opcode);
 
 private:
@@ -46,6 +48,7 @@ private:
   Instruction opcode_ = {};
   RegisterSet8 &regSet_;
   Memory8 &memory_;
+  Interface8 &interface_;
 
   // most significant nibbles for opcodes completely determined by this value
   const std::set<Byte> msnSet = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6,
@@ -136,6 +139,9 @@ private:
   void ExecuteFx33();
   void ExecuteFx55();
   void ExecuteFx65();
+
+  auto WrapSpriteToDisplay(const std::vector<Byte> &spriteVec, Byte posX,
+                           Byte posY) -> std::vector<Byte> const;
 };
 
 #endif /* EMU8_INSTRUCTION_SET_H */

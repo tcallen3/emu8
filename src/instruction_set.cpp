@@ -45,8 +45,10 @@ static auto GetSingleRegNibble(Instruction opcode) -> Byte {
   return bits8::lowNibble(high);
 }
 
-InstructionSet8::InstructionSet8(RegisterSet8 &reg, Memory8 &mem)
-    : eng(rdev()), byteDist(BYTE_MIN, BYTE_MAX), regSet_{reg}, memory_{mem} {}
+InstructionSet8::InstructionSet8(RegisterSet8 &reg, Memory8 &mem,
+                                 Interface8 &interface)
+    : eng(rdev()), byteDist(BYTE_MIN, BYTE_MAX), regSet_{reg}, memory_{mem},
+      interface_{interface} {}
 
 void InstructionSet8::DecodeExecuteInstruction(Instruction opcode) {
   opcode_ = opcode;
@@ -91,7 +93,7 @@ void InstructionSet8::DecodeExecuteInstruction(Instruction opcode) {
 
 void InstructionSet8::Execute00E0() {
   // CLS - clear the display
-  // FIXME: implement
+  interface_.ClearScreen();
 }
 
 void InstructionSet8::Execute00EE() {
@@ -293,11 +295,63 @@ void InstructionSet8::ExecuteCxkk() {
   regSet_.registers[regX] = byteDist(eng) & bytekk;
 }
 
+auto InstructionSet8::WrapSpriteToDisplay(const std::vector<Byte> &spriteVec,
+                                          Byte posX, Byte posY)
+    -> std::vector<Byte> const {
+  std::vector<Byte> fullScreen(Interface8::textureSize, 0x0);
+
+  const std::size_t bitPosX = posX % Interface8::fieldWidth;
+
+  // at most, a bit sequence not aligned with a byte boundary can overlap two
+  // neighboring bytes, so we build low and high bytes by shifting sprite input
+  const std::size_t rightShift = bitPosX % CHAR_BIT;
+  const std::size_t leftShift = CHAR_BIT - rightShift;
+
+  const std::size_t stride = Interface8::fieldWidth / CHAR_BIT;
+
+  // bytePosX is guaranteed not to wrap, but the high byte (bytePosX + 1) could
+  const std::size_t colLowX = bitPosX / CHAR_BIT;
+  const std::size_t colHighX = (colLowX + 1) % stride;
+
+
+  for (std::size_t index = 0; index < spriteVec.size(); index++) {
+    Byte curr = spriteVec[index];
+    Byte lowByte = static_cast<Byte>(curr >> rightShift);
+    Byte highByte = static_cast<Byte>(curr << leftShift);
+
+    const std::size_t row = posY % Interface8::fieldHeight;
+
+    const std::size_t lowIndex = (stride * row) + colLowX;
+    const std::size_t highIndex = (stride * row) + colHighX;
+
+    fullScreen[lowIndex] = lowByte;
+    fullScreen[highIndex] = highByte;
+
+    posY++;
+  }
+
+  return fullScreen;
+}
+
 void InstructionSet8::ExecuteDxyn() {
   // DRW Vx, Vy, nibble - display n-byte sprite starting at memory location I at
   // (Vx, Vy) on screen, set VF = collision
+  auto [highByte, lowByte] = bits8::splitWord(opcode_);
 
-  // FIXME: implement
+  std::vector<Byte> spriteVec;
+  const Byte spriteLen = bits8::lowNibble(lowByte);
+  memory_.fetchSequence(regSet_.regI, spriteLen, spriteVec);
+
+  const Byte regX = bits8::lowNibble(highByte);
+  const Byte regY = bits8::highNibble(lowByte);
+
+  const Byte posX = regSet_.registers[regX];
+  const Byte posY = regSet_.registers[regY];
+
+  auto screenContents = WrapSpriteToDisplay(spriteVec, posX, posY);
+
+  regSet_.registers[RegisterSet8::flagReg] =
+      (interface_.UpdateScreen(screenContents)) ? 1 : 0;
 }
 
 void InstructionSet8::ExecuteEx9E() {

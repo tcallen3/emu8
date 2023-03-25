@@ -27,6 +27,7 @@
 #include <set>
 
 #include "instruction_set.h"
+#include "interface.h"
 #include "memory.h"
 #include "register_set.h"
 #include "test.h"
@@ -88,6 +89,7 @@ private:
 
   Memory8 memory_;
   RegisterSet8 regSet_;
+  Interface8 interface_;
 
   const std::map<std::string, InstructionMemFn> functionMap_ = {
       {"Instruction 00EE", &TestInstruction::Test00EE},
