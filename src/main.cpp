@@ -137,7 +137,13 @@ auto main(int argc, char *argv[]) -> int {
   VirtualMachine8 vm8(title, progSettings.scaling, memBase);
 
   if (!progSettings.config.empty()) {
-    vm8.LoadKeyConfig(progSettings.config);
+    try {
+      vm8.LoadKeyConfig(progSettings.config);
+    } catch (const std::runtime_error &err) {
+      std::cerr << "Error loading keybinding config file: " << err.what()
+                << '\n';
+      return EXIT_FAILURE;
+    }
   }
 
   auto retval = vm8.Run(progSettings.romFile);
