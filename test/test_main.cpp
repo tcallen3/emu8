@@ -22,8 +22,6 @@
 #include <iostream>
 #include <vector>
 
-#include "config_parser.h"
-
 #include "test.h"
 #include "test_bits.h"
 #include "test_instruction.h"
