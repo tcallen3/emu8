@@ -25,7 +25,7 @@
 
 #include "interface.h"
 
-Interface8::Interface8(const std::string &romName, int scaling)
+Interface8::Interface8(const std::string &title, int scaling)
     : scaling_(scaling), screenWidth_(scaling_ * fieldWidth),
       screenHeight_(scaling_ * fieldHeight) {
 
@@ -37,8 +37,8 @@ Interface8::Interface8(const std::string &romName, int scaling)
   }
 
   // FIXME: migrate app name to variable
-  const std::string title = std::string{"emu8 - "} + romName;
-  CreateWindow(title);
+  const std::string header = std::string{"emu8 - "} + title;
+  CreateWindow(header);
   CreateRenderer();
   CreateSurface();
   FillScancodeMap();

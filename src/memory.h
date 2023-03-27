@@ -35,6 +35,7 @@ public:
   // the Chip-8 only has 4k total memory
   static constexpr Address memSize = 0x1000;
   static constexpr Address loadAddrDefault = 0x200;
+  static constexpr Address loadAddrEti660 = 0x600;
   static constexpr Address spriteBegin = 0x50;
   static constexpr Address spriteLen = 5;
 

@@ -63,7 +63,7 @@ public:
     CHIP8_KEY_F
   };
 
-  explicit Interface8(const std::string &romName, int scaling = defaultScaling);
+  explicit Interface8(const std::string &title, int scaling = defaultScaling);
   ~Interface8();
 
   // avoid working with SDL move/copy semantics
@@ -76,6 +76,10 @@ public:
   auto UpdateScreen(const std::vector<Byte> &newScreen) -> bool;
   auto KeyPressed(Byte keyVal) -> bool;
   auto GetKeyPress() -> Byte;
+  auto SetKeyMapping(std::map<Byte, SDL_Scancode> &&mapping) {
+    keyboardMapping_ = mapping;
+  }
+
   void TempTest();
 
 private:
