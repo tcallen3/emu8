@@ -44,13 +44,6 @@ auto main() -> int {
     ptr->runTests();
   }
 
-  ConfigParser config;
-  const auto iniMap = config.ParseFile("config.ini");
-  for (const auto &[key, val] : iniMap) {
-    std::cout << static_cast<int>(key) << " -> " << static_cast<int>(val)
-              << std::endl;
-  }
-
   std::cout << "Finished testing\n";
   return 0;
 }

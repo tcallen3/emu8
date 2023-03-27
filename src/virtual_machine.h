@@ -22,10 +22,11 @@
 #ifndef EMU8_VIRTUAL_MACHINE_H
 #define EMU8_VIRTUAL_MACHINE_H
 
+#include <SDL2/SDL_scancode.h>
+#include <map>
 #include <string>
 
 #include "common.h"
-#include "config_parser.h"
 #include "instruction_set.h"
 #include "interface.h"
 #include "memory.h"
@@ -37,16 +38,18 @@ public:
                   std::size_t memBase);
 
   void LoadKeyConfig(const std::string &config);
-  int Run(const std::string &romFile);
+  auto Run(const std::string &romFile) -> int;
 
 private:
   std::size_t memBase_;
 
-  ConfigParser parser_ = {};
   Interface8 interface_;
   Memory8 memory_;
   RegisterSet8 regSet_ = {};
   InstructionSet8 instructionSet_;
+
+  static auto ParseFile(const std::string &iniFile)
+      -> std::map<Byte, SDL_Scancode>;
 };
 
 #endif /* EMU8_VIRTUAL_MACHINE_H */

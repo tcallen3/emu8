@@ -29,8 +29,8 @@
 
 namespace bpt = boost::property_tree;
 
-std::map<Byte, SDL_Scancode>
-ConfigParser::ParseFile(const std::string &iniFile) {
+auto ConfigParser::ParseFile(const std::string &iniFile)
+    -> std::map<Byte, SDL_Scancode> {
   const std::string section = "keybindings";
   const std::vector<std::string> keys = {
       "KEY_0", "KEY_1", "KEY_2", "KEY_3", "KEY_4", "KEY_5", "KEY_6", "KEY_7",
@@ -43,8 +43,8 @@ ConfigParser::ParseFile(const std::string &iniFile) {
   std::map<Byte, SDL_Scancode> codeMap;
 
   for (const auto &key : keys) {
-    const std::string entry = section + "." + key;
-    const std::string codeName = tree.get<std::string>(entry);
+    const std::string entry = section + "." + key; // NOLINT
+    const auto codeName = tree.get<std::string>(entry);
     const SDL_Scancode scanCode = SDL_GetScancodeFromName(codeName.c_str());
 
     if (scanCode == SDL_SCANCODE_UNKNOWN) {

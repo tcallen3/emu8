@@ -30,9 +30,10 @@
 
 class ConfigParser {
 public:
-  ConfigParser() {}
+  ConfigParser() = default;
 
-  std::map<Byte, SDL_Scancode> ParseFile(const std::string &iniFile);
+  static auto ParseFile(const std::string &iniFile)
+      -> std::map<Byte, SDL_Scancode>;
 };
 
 #endif /* EMU8_CONFIG_PARSER_H */

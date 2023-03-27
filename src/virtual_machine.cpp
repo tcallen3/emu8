@@ -20,24 +20,60 @@
  */
 
 #include <SDL2/SDL.h>
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 
 #include "virtual_machine.h"
+
+namespace bpt = boost::property_tree;
 
 VirtualMachine8::VirtualMachine8(const std::string &title, int displayScale,
                                  std::size_t memBase)
     : memBase_(memBase), interface_(title, displayScale), memory_(memBase),
       instructionSet_(regSet_, memory_, interface_) {}
 
+auto VirtualMachine8::ParseFile(const std::string &iniFile)
+    -> std::map<Byte, SDL_Scancode> {
+  const std::string section = "keybindings";
+  const std::vector<std::string> keys = {
+      "KEY_0", "KEY_1", "KEY_2", "KEY_3", "KEY_4", "KEY_5", "KEY_6", "KEY_7",
+      "KEY_8", "KEY_9", "KEY_A", "KEY_B", "KEY_C", "KEY_D", "KEY_E", "KEY_F"};
+
+  bpt::ptree tree;
+  bpt::read_ini(iniFile, tree);
+
+  Byte index = 0;
+  std::map<Byte, SDL_Scancode> codeMap;
+
+  for (const auto &key : keys) {
+    const std::string entry = section + "." + key; // NOLINT
+    const auto codeName = tree.get<std::string>(entry);
+    const SDL_Scancode scanCode = SDL_GetScancodeFromName(codeName.c_str());
+
+    if (scanCode == SDL_SCANCODE_UNKNOWN) {
+      std::string msg = "Unrecognized key scancode name \"";
+      msg += codeName + "\": ";
+      throw std::runtime_error(msg + SDL_GetError());
+    }
+
+    codeMap.insert(std::pair{index, scanCode});
+    index++;
+  }
+
+  return codeMap;
+}
+
 void VirtualMachine8::LoadKeyConfig(const std::string &config) {
-  auto mapping = parser_.ParseFile(config);
+  auto mapping = ParseFile(config);
   interface_.SetKeyMapping(std::move(mapping));
 }
 
-int VirtualMachine8::Run(const std::string &romFile) {
+auto VirtualMachine8::Run(const std::string &romFile) -> int {
   std::ifstream romData(romFile, std::ios::binary);
   if (!romData.good()) {
     std::cerr << "Could not open ROM file: " << romFile << '\n';
@@ -57,7 +93,7 @@ int VirtualMachine8::Run(const std::string &romFile) {
       instructionSet_.DecodeExecuteInstruction(opcode);
       regSet_.pc += 2;
 
-      if (SDL_HasEvent(SDL_QUIT)) {
+      if (SDL_HasEvent(SDL_QUIT) == SDL_TRUE) {
         quit = true;
       }
     }
