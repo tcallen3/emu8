@@ -28,8 +28,8 @@
 
 #include <boost/program_options.hpp>
 
-#include "interface.h"
 #include "memory.h"
+#include "virtual_machine.h"
 
 namespace bpo = boost::program_options;
 
@@ -105,6 +105,8 @@ void print_license() {
 
   std::cout << "For more information, see the GNU General Public License "
             << "<https://www.gnu.org/licenses>.\n";
+
+  std::cout << '\n';
 }
 
 auto main(int argc, char *argv[]) -> int {
@@ -128,11 +130,17 @@ auto main(int argc, char *argv[]) -> int {
 
   print_license();
 
-  // FIXME: replace with actual code using options struc
-  Memory8 mem(Memory8::loadAddrDefault);
   const std::filesystem::path title{progSettings.romFile};
-  Interface8 interface(title.stem(), progSettings.scaling);
-  interface.TempTest();
+  auto memBase =
+      (progSettings.etiOn) ? Memory8::loadAddrEti660 : Memory8::loadAddrDefault;
 
-  return EXIT_SUCCESS;
+  VirtualMachine8 vm8(title, progSettings.scaling, memBase);
+
+  if (!progSettings.config.empty()) {
+    vm8.LoadKeyConfig(progSettings.config);
+  }
+
+  auto retval = vm8.Run(progSettings.romFile);
+
+  return retval;
 }

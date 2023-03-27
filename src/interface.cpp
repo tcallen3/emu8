@@ -219,20 +219,3 @@ auto Interface8::GetKeyPress() -> Byte {
 
   return scancodeMapping_.at(event.key.keysym.scancode);
 }
-
-// see if we can get something to show
-void Interface8::TempTest() {
-  const Byte filled = 0xFF;
-
-  std::size_t i = 0;
-  while (i < textureSize) {
-    std::vector<Byte> bitVec(textureSize, 0);
-    bitVec[i] = filled;
-    Byte *pix = static_cast<Byte *>(surface_->pixels);
-
-    std::copy(bitVec.begin(), bitVec.end(), pix);
-    RenderSurface();
-
-    i++;
-  }
-}

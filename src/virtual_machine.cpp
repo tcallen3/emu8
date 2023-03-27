@@ -62,7 +62,7 @@ int VirtualMachine8::Run(const std::string &romFile) {
       }
     }
   } catch (const std::exception &err) {
-    std::cerr << err.what() << '\n';
+    std::cerr << "ERROR: " << err.what() << '\n';
 
     std::string coreName = romFile + ".core";
     std::ofstream coreFile(coreName, std::ios::binary);

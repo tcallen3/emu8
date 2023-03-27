@@ -80,8 +80,6 @@ public:
     keyboardMapping_ = mapping;
   }
 
-  void TempTest();
-
 private:
   // set black and white color palette
   const std::array<SDL_Color, 2> colors_ = {
