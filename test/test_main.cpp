@@ -22,6 +22,8 @@
 #include <iostream>
 #include <vector>
 
+#include "config_parser.h"
+
 #include "test.h"
 #include "test_bits.h"
 #include "test_instruction.h"
@@ -40,6 +42,13 @@ auto main() -> int {
 
   for (const auto &ptr : testPtrs) {
     ptr->runTests();
+  }
+
+  ConfigParser config;
+  const auto iniMap = config.ParseFile("config.ini");
+  for (const auto &[key, val] : iniMap) {
+    std::cout << static_cast<int>(key) << " -> " << static_cast<int>(val)
+              << std::endl;
   }
 
   std::cout << "Finished testing\n";
