@@ -118,7 +118,6 @@ auto main(int argc, char *argv[]) -> int {
     inputPresent = parse_options(argc, vecArgs, progSettings);
   } catch (const std::exception &err) {
     std::cerr << err.what() << '\n';
-
     usage(vecArgs.front());
     return EXIT_FAILURE;
   }
