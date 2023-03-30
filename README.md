@@ -4,7 +4,7 @@
 
 # SYNOPSIS
 
-`emu8 [-s scale_factor] [--eti660] romfile`
+`emu8 [--help] [--config conf.ini] [-s|--scaling scale_factor] [--ipt count] [--eti660] romfile`
 
 # DESCRIPTION
 
@@ -20,6 +20,8 @@ given the massive improvement in modern clock speeds relative to the
 nominal Chip-8 clock frequency. Because the architecture was virtual from 
 the beginning, timing in `emu8` is largely focused on a reasonable user 
 experience, rather than cycle-matching a fuzzily-defined virtual processor.
+This timing is controlled by the number of instructions allowed per tick,
+and is configurable by the user (see below).
 
 Error conditions (such as invalid instructions or memory faults) trigger
 a core dump of the virtual machine memory, along with additional context
@@ -28,8 +30,19 @@ examine program state during execution of a given ROM.
 
 # OPTIONS
 
-The `-s` option allows the user to specify a different display scaling 
-factor for the in-memory 64x32 video buffer (see below). 
+The `--help` option prints a simple summary of the command line arguments and
+general usage, amounting to a condensed version of this section.
+
+The `--config` option allows the user to specify an INI-format file that
+specifies alternate keybindings from the default. See below for details.
+
+The `-s` or `--scaling` option allows the user to specify a different display 
+scaling factor for the in-memory 64x32 video buffer (see below). 
+
+The `--ipt` option allows for user configuration of the maximum number of
+instructions per tick. Each tick is 1/60th of a second, and the default
+maximum is set to 7 instructions, for an approximate clock rate around
+400 Hz. General consensus suggests a value between 400-800 Hz is best.
 
 The `--eti660` option changes the default program starting address to 0x600,
 corresponding to the convention for ETI 660 Chip-8 programs. 
@@ -53,5 +66,7 @@ mostly in having some additional instructions and larger video displays,
 Chip-48 extended instructions. The program also maintains the original 
 64x32 pixel display, though the default video mode scales this by a factor
 of 10 in each dimension to offer a more legible 640x320 output. 
+
+The keybinding configuration file (FIXME: more here)
 
 # KNOWN ISSUES
