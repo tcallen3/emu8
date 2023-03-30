@@ -28,6 +28,11 @@ a core dump of the virtual machine memory, along with additional context
 written to `stderr`. Further debugging can be accomplished using `gdb(1)` to
 examine program state during execution of a given ROM.
 
+# DEPENDENCIES
+
+In order to compile successfully, this code requires the SDL2 libraries to be
+present on the system, along with the Boost program_options library.
+
 # OPTIONS
 
 The `--help` option prints a simple summary of the command line arguments and
