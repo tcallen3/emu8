@@ -398,14 +398,12 @@ void InstructionSet8::ExecuteFx0A() {
 
 void InstructionSet8::ExecuteFx15() {
   // LD DT, Vx - set delay timer = Vx
-  // FIXME: implment delay countdown
   const auto regX = GetSingleRegNibble(opcode_);
   regSet_.regDT = regSet_.registers[regX];
 }
 
 void InstructionSet8::ExecuteFx18() {
   // LD ST, Vx - set sound timer = Vx
-  // FIXME: implment sound countdown
   const auto regX = GetSingleRegNibble(opcode_);
   regSet_.regST = regSet_.registers[regX];
 }
