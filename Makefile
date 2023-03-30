@@ -17,7 +17,7 @@ CXXFLAGS := $(CXXEXTRA) $(INCLUDE) -std=c++17 -Wall -Wextra -Werror -pedantic -W
 CXXFLAGS += -Wcast-align -Wcast-qual -Wconversion -Wdisabled-optimization
 CXXFLAGS += -Wfloat-equal -Wformat=2 -Wformat-nonliteral -pedantic-errors 
 CXXFLAGS += -Wformat-security -Wformat-y2k -Wimport -Winit-self
-CXXFLAGS += -Winline -Winvalid-pch -Wlong-long -Wmissing-field-initializers
+CXXFLAGS += -Winline -Winvalid-pch -Wmissing-field-initializers
 CXXFLAGS += -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn
 CXXFLAGS += -Wpacked -Wpointer-arith -Wredundant-decls -Wshadow
 CXXFLAGS += -Wstack-protector -Wstrict-aliasing=2 -Wswitch-default -Wswitch-enum

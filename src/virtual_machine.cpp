@@ -22,10 +22,12 @@
 #include <SDL2/SDL.h>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <chrono>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <thread>
 #include <vector>
 
 #include "virtual_machine.h"
@@ -33,8 +35,9 @@
 namespace bpt = boost::property_tree;
 
 VirtualMachine8::VirtualMachine8(const std::string &title, int displayScale,
-                                 std::size_t memBase)
-    : memBase_(memBase), interface_(title, displayScale), memory_(memBase),
+                                 std::size_t memBase, std::size_t instrPerTick)
+    : memBase_(memBase), instrPerTick_(instrPerTick),
+      interface_(title, displayScale), memory_(memBase),
       instructionSet_(regSet_, memory_, interface_) {}
 
 auto VirtualMachine8::ParseFile(const std::string &iniFile)
@@ -73,6 +76,28 @@ void VirtualMachine8::LoadKeyConfig(const std::string &config) {
   interface_.SetKeyMapping(std::move(mapping));
 }
 
+static auto GetNextTick() {
+  using std::chrono::operator""ms;
+  const auto tickLen = 16ms;
+  return (std::chrono::steady_clock::now() + tickLen);
+}
+
+void VirtualMachine8::TickReset() {
+  // decrement tick registers
+  if (regSet_.regST > 0) {
+    regSet_.regST--;
+  }
+
+  if (regSet_.regDT > 0) {
+    regSet_.regDT--;
+  }
+
+  // reset instruction count
+  instrCount_ = 0;
+
+  // FIXME: push audio segment
+}
+
 auto VirtualMachine8::Run(const std::string &romFile) -> int {
   std::ifstream romData(romFile, std::ios::binary);
   if (!romData.good()) {
@@ -80,17 +105,30 @@ auto VirtualMachine8::Run(const std::string &romFile) -> int {
     return EXIT_FAILURE;
   }
 
-  // FIXME: add register decrement and audio output
   try {
     memory_.loadProgram(romData);
     romData.close();
 
     regSet_.pc = static_cast<Address>(memBase_);
+    auto nextTick = GetNextTick();
+    instrCount_ = 0;
 
     bool quit = false;
     while (!quit) {
+      if (std::chrono::steady_clock::now() >= nextTick) {
+        TickReset();
+        nextTick = GetNextTick();
+      }
+
+      if (instrCount_ >= instrPerTick_) {
+        std::this_thread::sleep_until(nextTick);
+        TickReset();
+        nextTick = GetNextTick();
+      }
+
       auto opcode = memory_.fetchInstruction(regSet_.pc);
       instructionSet_.DecodeExecuteInstruction(opcode);
+      instrCount_++;
       regSet_.pc += 2;
 
       if (SDL_HasEvent(SDL_QUIT) == SDL_TRUE) {

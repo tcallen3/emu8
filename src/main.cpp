@@ -36,6 +36,7 @@ namespace bpo = boost::program_options;
 struct Settings {
   bool etiOn{false};
   int scaling{Interface8::defaultScaling};
+  std::size_t ipt{};
   std::string config{};
   std::string romFile{};
 };
@@ -44,7 +45,7 @@ void usage(const std::string &prog) {
   const std::filesystem::path progPath{prog};
   std::cerr << "usage: " << progPath.filename().string() << " "
             << "[--help] [--config conf.ini] [-s|--scaling scale_factor] "
-            << "[--eti660] romfile\n";
+            << "[--ipt count] [--eti660] romfile\n";
 }
 
 auto parse_options(int argc, std::vector<char *> &argv, Settings &settings)
@@ -56,6 +57,9 @@ auto parse_options(int argc, std::vector<char *> &argv, Settings &settings)
      "Keybind config file")
     ("eti660", "Load ROM using ETI 660 address conventions")
     ("help", "Display help message")
+    ("ipt", bpo::value<std::size_t>(&settings.ipt)
+                    ->default_value(VirtualMachine8::iptDefault), 
+     "Instructions per tick, sets effective clock speed")
     ("scaling,s", bpo::value<int>(&settings.scaling)
                     ->default_value(Interface8::defaultScaling),
      "Video resolution scaling");
@@ -133,7 +137,7 @@ auto main(int argc, char *argv[]) -> int {
   auto memBase =
       (progSettings.etiOn) ? Memory8::loadAddrEti660 : Memory8::loadAddrDefault;
 
-  VirtualMachine8 vm8(title, progSettings.scaling, memBase);
+  VirtualMachine8 vm8(title, progSettings.scaling, memBase, progSettings.ipt);
 
   if (!progSettings.config.empty()) {
     try {

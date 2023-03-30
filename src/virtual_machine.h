@@ -34,14 +34,19 @@
 
 class VirtualMachine8 {
 public:
+  // set instruction rate around 400 Hz
+  static constexpr std::size_t iptDefault = 7;
+
   VirtualMachine8(const std::string &title, int displayScale,
-                  std::size_t memBase);
+                  std::size_t memBase, std::size_t instrPerTick);
 
   void LoadKeyConfig(const std::string &config);
   auto Run(const std::string &romFile) -> int;
 
 private:
   std::size_t memBase_;
+  std::size_t instrPerTick_;
+  std::size_t instrCount_{0};
 
   Interface8 interface_;
   Memory8 memory_;
@@ -50,6 +55,8 @@ private:
 
   static auto ParseFile(const std::string &iniFile)
       -> std::map<Byte, SDL_Scancode>;
+
+  void TickReset();
 };
 
 #endif /* EMU8_VIRTUAL_MACHINE_H */
