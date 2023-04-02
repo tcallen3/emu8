@@ -46,6 +46,8 @@ public:
   static constexpr int defaultAudioBufSize = 4096;
   static constexpr int toneFreq = 440;
 
+  const std::string machineName = "emu8";
+
   // keyboard settings
   static constexpr Byte keyMax = 0xF;
 

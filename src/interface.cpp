@@ -69,8 +69,7 @@ Interface8::Interface8(const std::string &title, RegisterSet8 &regSet,
     throw std::runtime_error(errStream_.str());
   }
 
-  // FIXME: migrate app name to variable
-  const std::string header = std::string{"emu8 - "} + title;
+  const std::string header = machineName + " - " + title;
   CreateWindow(header);
   CreateRenderer();
   CreateSurface();
