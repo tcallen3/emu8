@@ -27,30 +27,32 @@
 #include "interface.h"
 
 static void AudioCB(void *userdata, Uint8 *stream, int len) {
-  const float twoPi = static_cast<float>(2 * std::acos(-1.0f));
-  const float amplitude = 0.1f;
-  const float sampleFreq = static_cast<float>(Interface8::audioSampleFreq);
-  const float toneFreq = static_cast<float>(Interface8::toneFreq);
+  const auto twoPi = static_cast<float>(2 * std::acos(-1.0F));
+  const float amplitude = 0.1F;
+  const auto sampleFreq = static_cast<float>(Interface8::audioSampleFreq);
+  const auto toneFreq = static_cast<float>(Interface8::toneFreq);
 
   static float phase = 0.0;
 
-  auto regPtr = reinterpret_cast<RegisterSet8 *>(userdata);
+  // we have to reinterpret here since SDL is stuck on C conventions
+  auto *regPtr = reinterpret_cast<RegisterSet8 *>(userdata); // NOLINT
   if (!regPtr->audioOn) {
     // can use len directly since it measures size of stream in bytes
     SDL_memset(stream, 0, len);
     return;
   }
 
-  float *buf = reinterpret_cast<float *>(stream);
+  // we have to reinterpret here since SDL is stuck on C conventions
+  auto *buf = reinterpret_cast<float *>(stream); // NOLINT
 
   // we assume only a single mono channel in the stream
-  const int max = len / (sizeof(float) / sizeof(Uint8));
+  const int max = len / static_cast<int>(sizeof(float) / sizeof(Uint8));
 
   int idx = 0;
   for (; idx < max; idx++) {
     auto sinVal = std::sin(
         twoPi * (toneFreq / sampleFreq) * static_cast<float>(idx) + phase);
-    buf[idx] = amplitude * static_cast<float>(sinVal);
+    buf[idx] = amplitude * static_cast<float>(sinVal); // NOLINT
   }
   phase = twoPi * (toneFreq / sampleFreq) * static_cast<float>(idx);
 }

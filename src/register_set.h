@@ -23,6 +23,7 @@
 #define EMU8_REGISTER_SET_H
 
 #include <array>
+#include <atomic>
 #include <stack>
 
 #include "common.h"

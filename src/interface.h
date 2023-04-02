@@ -25,7 +25,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_scancode.h>
 #include <array>
-#include <atomic>
 #include <map>
 #include <sstream>
 #include <string>
