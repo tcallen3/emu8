@@ -406,6 +406,7 @@ void InstructionSet8::ExecuteFx18() {
   // LD ST, Vx - set sound timer = Vx
   const auto regX = GetSingleRegNibble(opcode_);
   regSet_.regST = regSet_.registers[regX];
+  regSet_.audioOn = (regSet_.regST > 0);
 }
 
 void InstructionSet8::ExecuteFx1E() {

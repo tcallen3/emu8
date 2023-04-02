@@ -35,6 +35,7 @@ struct RegisterSet8 {
   Byte regDT = {0x0};
   Address regI = {0x0};
   Address pc = {0x0};
+  std::atomic<bool> audioOn = {false};
   std::array<Byte, regCount> registers = {};
   std::stack<Address> callStack = {};
 };

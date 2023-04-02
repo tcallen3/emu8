@@ -34,11 +34,15 @@
 
 namespace bpt = boost::property_tree;
 
-VirtualMachine8::VirtualMachine8(const std::string &title, int displayScale,
-                                 std::size_t memBase, std::size_t instrPerTick)
-    : memBase_(memBase), instrPerTick_(instrPerTick),
-      interface_(title, displayScale), memory_(memBase),
-      instructionSet_(regSet_, memory_, interface_) {}
+VirtualMachine8::VirtualMachine8(const std::string &title,
+                                 const Settings &settings)
+    : memBase_(settings.memBase), instrPerTick_(settings.ipt),
+      interface_(title, regSet_, settings.audioSize, settings.scaling),
+      memory_(settings.memBase), instructionSet_(regSet_, memory_, interface_) {
+  if (!settings.config.empty()) {
+    LoadKeyConfig(settings.config);
+  }
+}
 
 auto VirtualMachine8::ParseFile(const std::string &iniFile)
     -> std::map<Byte, SDL_Scancode> {
@@ -87,6 +91,7 @@ void VirtualMachine8::TickReset() {
   if (regSet_.regST > 0) {
     regSet_.regST--;
   }
+  regSet_.audioOn = (regSet_.regST > 0);
 
   if (regSet_.regDT > 0) {
     regSet_.regDT--;
@@ -94,8 +99,6 @@ void VirtualMachine8::TickReset() {
 
   // reset instruction count
   instrCount_ = 0;
-
-  // FIXME: push audio segment
 }
 
 auto VirtualMachine8::Run(const std::string &romFile) -> int {

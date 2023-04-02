@@ -67,7 +67,7 @@ static auto BuildAddressInstruction(const Byte instrNib, Address addr)
 TestInstruction::TestInstruction()
     : eng(rdev()), byteDist(BYTE_MIN, BYTE_MAX),
       validAddrDist(0, Memory8::memSize), memory_(Memory8::loadAddrDefault),
-      regSet_(), interface_("test") {}
+      regSet_(), interface_("test", regSet_) {}
 
 void TestInstruction::runTests() {
   for (const auto &[desc, func] : functionMap_) {

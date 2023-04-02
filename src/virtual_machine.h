@@ -37,8 +37,16 @@ public:
   // set instruction rate around 400 Hz
   static constexpr std::size_t iptDefault = 7;
 
-  VirtualMachine8(const std::string &title, int displayScale,
-                  std::size_t memBase, std::size_t instrPerTick);
+  struct Settings {
+    int scaling{Interface8::defaultScaling};
+    Address audioSize{Interface8::defaultAudioBufSize};
+    std::size_t memBase{Memory8::loadAddrDefault};
+    std::size_t ipt{};
+    std::string config{};
+    std::string romFile{};
+  };
+
+  VirtualMachine8(const std::string &title, const Settings &settings);
 
   void LoadKeyConfig(const std::string &config);
   auto Run(const std::string &romFile) -> int;

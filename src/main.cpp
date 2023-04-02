@@ -28,31 +28,27 @@
 
 #include <boost/program_options.hpp>
 
+#include "common.h"
 #include "memory.h"
 #include "virtual_machine.h"
 
 namespace bpo = boost::program_options;
 
-struct Settings {
-  bool etiOn{false};
-  int scaling{Interface8::defaultScaling};
-  std::size_t ipt{};
-  std::string config{};
-  std::string romFile{};
-};
-
 void usage(const std::string &prog) {
   const std::filesystem::path progPath{prog};
   std::cerr << "usage: " << progPath.filename().string() << " "
-            << "[--help] [--config conf.ini] [-s|--scaling scale_factor] "
-            << "[--ipt count] [--eti660] romfile\n";
+            << "[--audioBufSize size] [--config conf.ini] [--eti660] [--help] "
+            << "[--ipt count] [-s|--scaling scale_factor] romfile\n";
 }
 
-auto parse_options(int argc, std::vector<char *> &argv, Settings &settings)
-    -> bool {
+auto parse_options(int argc, std::vector<char *> &argv,
+                   VirtualMachine8::Settings &settings) -> bool {
   bpo::options_description visible("Options");
   // clang-format off
   visible.add_options()
+    ("audioBufSize", bpo::value<Address>(&settings.audioSize)
+                    ->default_value(Interface8::defaultAudioBufSize), 
+                    "SDL audio buffer size")
     ("config", bpo::value<std::string>(&settings.config), 
      "Keybind config file")
     ("eti660", "Load ROM using ETI 660 address conventions")
@@ -62,7 +58,7 @@ auto parse_options(int argc, std::vector<char *> &argv, Settings &settings)
      "Instructions per tick, sets effective clock speed")
     ("scaling,s", bpo::value<int>(&settings.scaling)
                     ->default_value(Interface8::defaultScaling),
-     "Video resolution scaling");
+                    "Video resolution scaling");
   // clang-format on
 
   bpo::options_description hidden("Hidden options");
@@ -92,7 +88,7 @@ auto parse_options(int argc, std::vector<char *> &argv, Settings &settings)
   }
 
   if (varMap.count("eti660") != 0) {
-    settings.etiOn = true;
+    settings.memBase = Memory8::loadAddrEti660;
   }
 
   return (varMap.count("inputFile") != 0);
@@ -116,7 +112,7 @@ void print_license() {
 auto main(int argc, char *argv[]) -> int {
   std::vector<char *> vecArgs(argv, argv + argc);
 
-  Settings progSettings;
+  VirtualMachine8::Settings progSettings;
   bool inputPresent{false};
   try {
     inputPresent = parse_options(argc, vecArgs, progSettings);
@@ -134,20 +130,7 @@ auto main(int argc, char *argv[]) -> int {
   print_license();
 
   const std::filesystem::path title{progSettings.romFile};
-  auto memBase =
-      (progSettings.etiOn) ? Memory8::loadAddrEti660 : Memory8::loadAddrDefault;
-
-  VirtualMachine8 vm8(title, progSettings.scaling, memBase, progSettings.ipt);
-
-  if (!progSettings.config.empty()) {
-    try {
-      vm8.LoadKeyConfig(progSettings.config);
-    } catch (const std::runtime_error &err) {
-      std::cerr << "Error loading keybinding config file: " << err.what()
-                << '\n';
-      return EXIT_FAILURE;
-    }
-  }
+  VirtualMachine8 vm8(title.stem(), progSettings);
 
   auto retval = vm8.Run(progSettings.romFile);
 

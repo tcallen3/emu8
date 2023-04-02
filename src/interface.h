@@ -25,12 +25,14 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_scancode.h>
 #include <array>
+#include <atomic>
 #include <map>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "common.h"
+#include "register_set.h"
 
 class Interface8 {
 public:
@@ -40,6 +42,10 @@ public:
   static constexpr int defaultScaling = 10;
   static constexpr std::size_t textureSize =
       fieldWidth * fieldHeight / CHAR_BIT;
+
+  static constexpr int audioSampleFreq = 44100;
+  static constexpr int defaultAudioBufSize = 4096;
+  static constexpr int toneFreq = 440;
 
   // keyboard settings
   static constexpr Byte keyMax = 0xF;
@@ -63,7 +69,9 @@ public:
     CHIP8_KEY_F
   };
 
-  explicit Interface8(const std::string &title, int scaling = defaultScaling);
+  explicit Interface8(const std::string &title, RegisterSet8 &regSet,
+                      Address audioSize = defaultAudioBufSize,
+                      int scaling = defaultScaling);
   ~Interface8();
 
   // avoid working with SDL move/copy semantics
@@ -122,14 +130,21 @@ private:
 
   std::stringstream errStream_ = {};
 
+  SDL_AudioSpec audioSpec_ = {};
+  SDL_AudioDeviceID audioID_ = {};
+
   int scaling_;
   int screenWidth_;
   int screenHeight_;
+  Address audioBufSize_;
+
+  RegisterSet8 &regSet_;
 
   void CreateWindow(const std::string &title);
   void CreateRenderer();
   void CreateSurface();
   void FillScancodeMap();
+  void InitAudio();
   auto ValidKeyPress(const SDL_Event &event) -> bool;
   void RenderSurface();
 };

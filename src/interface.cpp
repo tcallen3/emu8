@@ -21,16 +21,47 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <stdexcept>
 
 #include "interface.h"
 
-Interface8::Interface8(const std::string &title, int scaling)
-    : scaling_(scaling), screenWidth_(scaling_ * fieldWidth),
-      screenHeight_(scaling_ * fieldHeight) {
+static void AudioCB(void *userdata, Uint8 *stream, int len) {
+  const float twoPi = static_cast<float>(2 * std::acos(-1.0f));
+  const float amplitude = 0.1f;
+  const float sampleFreq = static_cast<float>(Interface8::audioSampleFreq);
+  const float toneFreq = static_cast<float>(Interface8::toneFreq);
 
-  // FIXME: add audio intialization later
-  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+  static float phase = 0.0;
+
+  auto regPtr = reinterpret_cast<RegisterSet8 *>(userdata);
+  if (!regPtr->audioOn) {
+    // can use len directly since it measures size of stream in bytes
+    SDL_memset(stream, 0, len);
+    return;
+  }
+
+  float *buf = reinterpret_cast<float *>(stream);
+
+  // we assume only a single mono channel in the stream
+  const int max = len / (sizeof(float) / sizeof(Uint8));
+
+  int idx = 0;
+  for (; idx < max; idx++) {
+    auto sinVal = std::sin(
+        twoPi * (toneFreq / sampleFreq) * static_cast<float>(idx) + phase);
+    buf[idx] = amplitude * static_cast<float>(sinVal);
+  }
+  phase = twoPi * (toneFreq / sampleFreq) * static_cast<float>(idx);
+}
+
+Interface8::Interface8(const std::string &title, RegisterSet8 &regSet,
+                       Address audioSize, int scaling)
+    : scaling_(scaling), screenWidth_(scaling_ * fieldWidth),
+      screenHeight_(scaling_ * fieldHeight), audioBufSize_(audioSize),
+      regSet_(regSet) {
+
+  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
     errStream_ << "SDL initialization failed: ";
     errStream_ << SDL_GetError();
     throw std::runtime_error(errStream_.str());
@@ -42,6 +73,7 @@ Interface8::Interface8(const std::string &title, int scaling)
   CreateRenderer();
   CreateSurface();
   FillScancodeMap();
+  InitAudio();
 }
 
 void Interface8::CreateWindow(const std::string &title) {
@@ -112,6 +144,28 @@ void Interface8::FillScancodeMap() {
   }
 }
 
+void Interface8::InitAudio() {
+  SDL_AudioSpec requested;
+  SDL_memset(&requested, 0, sizeof(requested));
+
+  requested.freq = audioSampleFreq;
+  requested.format = AUDIO_F32SYS;
+  requested.channels = 1;
+  requested.samples = audioBufSize_;
+  requested.callback = AudioCB;
+  requested.userdata = &regSet_;
+
+  audioID_ = SDL_OpenAudioDevice(nullptr, 0, &requested, &audioSpec_, 0);
+  if (audioID_ == 0) {
+    errStream_ << "Failed to open audio device: ";
+    errStream_ << SDL_GetError();
+    throw std::runtime_error(errStream_.str());
+  }
+
+  // unpause the audio stream
+  SDL_PauseAudioDevice(audioID_, 0);
+}
+
 Interface8::~Interface8() {
   if (screenTexture_ != nullptr) {
     SDL_DestroyTexture(screenTexture_);
@@ -127,6 +181,7 @@ Interface8::~Interface8() {
     SDL_DestroyWindow(window_);
   }
 
+  SDL_CloseAudioDevice(audioID_);
   SDL_Quit();
 }
 
