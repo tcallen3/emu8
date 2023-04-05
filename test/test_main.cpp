@@ -34,6 +34,7 @@ auto main() -> int {
   TestMemory tmem;
   TestInstruction tinstr;
 
+  // FIXME: create special tests for video, audio, and key presses
   testPtrs.push_back(&tbits);
   testPtrs.push_back(&tmem);
   testPtrs.push_back(&tinstr);
