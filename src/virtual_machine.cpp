@@ -130,9 +130,10 @@ auto VirtualMachine8::Run(const std::string &romFile) -> int {
       }
 
       auto opcode = memory_.fetchInstruction(regSet_.pc);
+      regSet_.pc += 2;
+
       instructionSet_.DecodeExecuteInstruction(opcode);
       instrCount_++;
-      regSet_.pc += 2;
 
       if (SDL_HasEvent(SDL_QUIT) == SDL_TRUE) {
         quit = true;

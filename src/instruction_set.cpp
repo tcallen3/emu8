@@ -362,6 +362,8 @@ void InstructionSet8::ExecuteEx9E() {
     throw std::out_of_range(msg + std::to_string(val));
   }
 
+  SDL_PumpEvents();
+
   if (interface_.KeyPressed(val)) {
     regSet_.pc += 2;
   }
