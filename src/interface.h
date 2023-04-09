@@ -46,8 +46,6 @@ public:
   static constexpr int defaultAudioBufSize = 4096;
   static constexpr int toneFreq = 440;
 
-  const std::string machineName = "emu8";
-
   // keyboard settings
   static constexpr Byte keyMax = 0xF;
 
@@ -120,6 +118,8 @@ private:
       {CHIP8_KEY_0, SDL_SCANCODE_X},
       {CHIP8_KEY_B, SDL_SCANCODE_C},
       {CHIP8_KEY_F, SDL_SCANCODE_V}};
+
+  const std::string machineName = "emu8";
 
   // holds inverse of keyboardMapping
   std::map<SDL_Scancode, Byte> scancodeMapping_ = {};

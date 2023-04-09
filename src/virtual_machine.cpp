@@ -109,9 +109,12 @@ auto VirtualMachine8::Run(const std::string &romFile) -> int {
   }
 
   try {
+    // FIXME: implment event polling and remove explicit pump calls in
+    // instructions
     memory_.loadProgram(romData);
     romData.close();
 
+    // FIXME: figure out which instructions trigger leak sanitizer and address?
     regSet_.pc = static_cast<Address>(memBase_);
     auto nextTick = GetNextTick();
     instrCount_ = 0;
