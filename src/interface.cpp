@@ -271,7 +271,9 @@ auto Interface8::GetKeyPress() -> Byte {
       const std::string msg = "Error waiting for SDL key press event: ";
       throw std::runtime_error(msg + SDL_GetError());
     }
-  } while (!ValidKeyPress(event));
+  }
+  while (!ValidKeyPress(event))
+    ;
 
   return scancodeMapping_.at(event.key.keysym.scancode);
 }

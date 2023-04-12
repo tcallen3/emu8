@@ -362,8 +362,6 @@ void InstructionSet8::ExecuteEx9E() {
     throw std::out_of_range(msg + std::to_string(val));
   }
 
-  SDL_PumpEvents();
-
   if (interface_.KeyPressed(val)) {
     regSet_.pc += 2;
   }
@@ -378,8 +376,6 @@ void InstructionSet8::ExecuteExA1() {
     const std::string msg = "Invalid key requested in instruction ExA1: ";
     throw std::out_of_range(msg + std::to_string(val));
   }
-
-  SDL_PumpEvents();
 
   if (!interface_.KeyPressed(val)) {
     regSet_.pc += 2;

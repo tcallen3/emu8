@@ -109,18 +109,26 @@ auto VirtualMachine8::Run(const std::string &romFile) -> int {
   }
 
   try {
-    // FIXME: implment event polling and remove explicit pump calls in
-    // instructions
     memory_.loadProgram(romData);
     romData.close();
 
-    // FIXME: figure out which instructions trigger leak sanitizer and address?
     regSet_.pc = static_cast<Address>(memBase_);
     auto nextTick = GetNextTick();
     instrCount_ = 0;
 
     bool quit = false;
     while (!quit) {
+      SDL_Event event;
+      while (SDL_PollEvent(&event) != 0) {
+        if (event.type == SDL_QUIT) {
+          quit = true;
+        }
+      }
+
+      if (quit) {
+        break;
+      }
+
       if (std::chrono::steady_clock::now() >= nextTick) {
         TickReset();
         nextTick = GetNextTick();
@@ -137,10 +145,6 @@ auto VirtualMachine8::Run(const std::string &romFile) -> int {
 
       instructionSet_.DecodeExecuteInstruction(opcode);
       instrCount_++;
-
-      if (SDL_HasEvent(SDL_QUIT) == SDL_TRUE) {
-        quit = true;
-      }
     }
   } catch (const std::exception &err) {
     std::cerr << "ERROR: " << err.what() << '\n';
