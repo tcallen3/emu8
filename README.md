@@ -72,6 +72,27 @@ Chip-48 extended instructions. The program also maintains the original
 64x32 pixel display, though the default video mode scales this by a factor
 of 10 in each dimension to offer a more legible 640x320 output. 
 
-The keybinding configuration file (FIXME: more here)
+By default, the original Chip-8 hexadecimal keyboard is mapped to the four
+rows of US keyboard keys from 1-4 down to Z-V. However, this can be set by
+the user via a configuration file. This file uses INI format, consisting
+of a single section, `[keybindings]`, which maps enums representing the
+logical Chip-8 inputs (from KEY_0 to KEY_F) to SDL key names as described
+in the [SDL keycode reference](https://wiki.libsdl.org/SDL2/SDL_Keycode). An
+example file, `config.ini` is included as part of the source distribution.
 
 # KNOWN ISSUES
+
+Although this emulator passes most of the tests in Timendus' 
+[revamped test suite](https://github.com/Timendus/chip8-test-suite), no effort
+has been made to replicate various quirks of the original COSMAC implementation, 
+which may cause some issues when running older software.
+
+Additionally, the timer register decrement works differently than this external
+test suite expects, which causes it to not register key wait commands as
+correctly suspending execution when called, although this instruction does in
+fact block until a keypress is detected.
+
+Finally, the audio output is choppy when run on a guest OS within a VM (e.g. 
+on VirtualBox or VMWare), even when using a fairly large audio buffer.
+Performance seems to improve on native hardware, which may be an issue with
+SDL or the behavior of the Linux audio stack when run as a guest system.
