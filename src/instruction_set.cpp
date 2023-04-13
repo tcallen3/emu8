@@ -63,7 +63,7 @@ void InstructionSet8::DecodeExecuteInstruction(Instruction opcode) {
     // code uniquely determined by msn
     codeKey = highNib;
   } else {
-    const Byte keyHigh = highNib << (CHAR_BIT / 2);
+    const Byte keyHigh = static_cast<Byte>(highNib << (CHAR_BIT / 2));
     if (lowByteSet.count(highNib) != 0) {
       // code determined by msn and low byte
       codeKey = bits8::fuseBytes(keyHigh, low);
@@ -256,7 +256,7 @@ void InstructionSet8::Execute8xyE() {
   const auto valX = regSet_.registers[nibX];
 
   const Byte mostBit = bits8::getMsb(valX);
-  regSet_.registers[nibX] = (valX << 1);
+  regSet_.registers[nibX] = static_cast<Byte>(valX << 1);
   regSet_.registers[RegisterSet8::flagReg] = mostBit;
 }
 

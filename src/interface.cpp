@@ -38,7 +38,7 @@ static void AudioCB(void *userdata, Uint8 *stream, int len) {
   auto *regPtr = reinterpret_cast<RegisterSet8 *>(userdata); // NOLINT
   if (!regPtr->audioOn) {
     // can use len directly since it measures size of stream in bytes
-    SDL_memset(stream, 0, len);
+    SDL_memset(stream, 0, static_cast<std::size_t>(len));
     return;
   }
 

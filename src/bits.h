@@ -38,7 +38,7 @@ constexpr auto fuseBytes(Byte msb, Byte lsb) -> Word {
   Word high = msb;
   Word low = lsb;
 
-  return (high << CHAR_BIT) | low;
+  return static_cast<Word>((high << CHAR_BIT) | low);
 }
 
 /*

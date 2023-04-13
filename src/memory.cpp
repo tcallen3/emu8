@@ -28,7 +28,7 @@
 #include "bits.h"
 #include "memory.h"
 
-static void reportInvalidAccess(Address addr) {
+[[noreturn]] static void reportInvalidAccess(Address addr) {
   std::stringstream errStream;
   errStream << "Invalid memory access: ";
   errStream << std::hex << addr;
