@@ -5,7 +5,6 @@ CWD := $(shell pwd)
 SRCDIR := src
 TESTDIR := test
 
-# FIXME: get build and test working with clang++ too
 CXX := g++
 CPPFLAGS := -MMD -MP
 

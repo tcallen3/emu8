@@ -48,7 +48,8 @@ static auto
 BuildMiddleRegInstruction(const MidRegBytes &rdata) -> Instruction {
   // to produce instructions of the form NxyM
   const Byte high = (rdata.highByte | rdata.regX);
-  const Byte low = (rdata.regY << (CHAR_BIT / 2)) | rdata.lowNibble;
+  const Byte low =
+      static_cast<Byte>((rdata.regY << (CHAR_BIT / 2)) | rdata.lowNibble);
 
   return bits8::fuseBytes(high, low);
 }
@@ -253,8 +254,8 @@ void TestInstruction::Test5xy0() {
       assert(regSet_.registers.at(regX) != regSet_.registers.at(regY));
 
       const auto oldPc = regSet_.pc;
-      Instruction opcode =
-          bits8::fuseBytes((hiByte | regX), regY << (CHAR_BIT / 2));
+      Instruction opcode = bits8::fuseBytes(
+          (hiByte | regX), static_cast<Byte>(regY << (CHAR_BIT / 2)));
       iset.DecodeExecuteInstruction(opcode);
       assert((oldPc == regSet_.pc) && "Unequal registers increment 0x5xy0");
     }
@@ -268,8 +269,8 @@ void TestInstruction::Test5xy0() {
       regSet_.registers.at(regY) = val;
 
       const auto oldPc = regSet_.pc;
-      Instruction opcode =
-          bits8::fuseBytes((hiByte | regX), regY << (CHAR_BIT / 2));
+      Instruction opcode = bits8::fuseBytes(
+          (hiByte | regX), static_cast<Byte>(regY << (CHAR_BIT / 2)));
       iset.DecodeExecuteInstruction(opcode);
       assert((regSet_.pc == (oldPc + 2)) && "Equal registers increment 0x5xy0");
     }
@@ -616,8 +617,8 @@ void TestInstruction::Test9xy0() {
       assert(regSet_.registers.at(regX) != regSet_.registers.at(regY));
 
       const auto oldPc = regSet_.pc;
-      Instruction opcode =
-          bits8::fuseBytes((hiByte | regX), regY << (CHAR_BIT / 2));
+      Instruction opcode = bits8::fuseBytes(
+          (hiByte | regX), static_cast<Byte>(regY << (CHAR_BIT / 2)));
       iset.DecodeExecuteInstruction(opcode);
       assert((regSet_.pc == (oldPc + 2)) &&
              "Unequal registers increment 0x9xy0");
@@ -632,8 +633,8 @@ void TestInstruction::Test9xy0() {
       regSet_.registers.at(regY) = val;
 
       const auto oldPc = regSet_.pc;
-      Instruction opcode =
-          bits8::fuseBytes((hiByte | regX), regY << (CHAR_BIT / 2));
+      Instruction opcode = bits8::fuseBytes(
+          (hiByte | regX), static_cast<Byte>(regY << (CHAR_BIT / 2)));
       iset.DecodeExecuteInstruction(opcode);
       assert((regSet_.pc == oldPc) && "Equal registers increment 0x9xy0");
     }
