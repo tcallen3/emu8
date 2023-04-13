@@ -10,8 +10,8 @@ CPPFLAGS := -MMD -MP
 
 INCLUDE := -I$(SRCDIR) -I$(TESTDIR)
 
-CXXEXTRA := -g3 -fsanitize=address
-#CXXEXTRA := -O3 -flto
+#CXXEXTRA := -g3 -fsanitize=address
+CXXEXTRA := -O3 -flto
 
 CXXFLAGS := $(CXXEXTRA) $(INCLUDE) -std=c++17 -Wall -Wextra -Werror -pedantic -Weffc++
 CXXFLAGS += -Wcast-align -Wcast-qual -Wconversion -Wdisabled-optimization
@@ -24,8 +24,8 @@ CXXFLAGS += -Wstack-protector -Wstrict-aliasing=2 -Wswitch-default -Wswitch-enum
 CXXFLAGS += -Wunreachable-code -Wunused -Wunused-parameter -Wvariadic-macros
 CXXFLAGS += -Wwrite-strings
 
-LDEXTRA := -fsanitize=address
-#LDEXTRA := -flto
+#LDEXTRA := -fsanitize=address
+LDEXTRA := -flto
 
 LDFLAGS := $(LDEXTRA) -lSDL2 -lboost_program_options -lm
 
